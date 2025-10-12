@@ -1,22 +1,24 @@
 #include "Patient.hpp"
 #include <iostream>
 Patient::Patient(std::string name, std::string cpf, std::string adress,
-                std::string gender, int age, std::string diabetesType, std::string bloodType)
-    : Person(name, cpf, adress, gender, age), diabetesType(diabetesType), bloodType(bloodType) {}
+                 std::string gender, int age, std::string diabetesType, std::string bloodType,
+                 double weight, double height)
+    : Person(name, cpf, adress, gender, age), diabetesType(diabetesType), bloodType(bloodType),
+      weight(weight), height(height) {}
 Patient::~Patient() {}
-std::string Patient::getDiabetesType()
+std::string Patient::getDiabetesType() const
 {
   return this->diabetesType;
 }
-std::string Patient::getBloodType()
+std::string Patient::getBloodType() const
 {
   return this->bloodType;
 }
-double Patient::getWeight()
+double Patient::getWeight() const
 {
   return this->weight;
 }
-double Patient::getHeight()
+double Patient::getHeight() const
 {
   return this->height;
 }

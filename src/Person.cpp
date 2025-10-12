@@ -9,8 +9,8 @@ std::string Person::getName() const { return this->name; }
 std::string Person::getCpf() const { return this->cpf; }
 std::string Person::getAdress() const { return this->adress; }
 std::string Person::getGender() const { return this->gender; }
-int Person::getAge() { return this->age; }
-void Person::printPersonalInfo() const
+int Person::getAge() const { return this->age; }
+void Person::printInfo() const
 {
   std::cout << "Nome: " << this->name << "\n";
   std::cout << "CPF: " << this->cpf << "\n";

@@ -20,14 +20,13 @@ public:
   Person(const Person &) = default;
   Person &operator=(Person &&) = default;
   Person &operator=(const Person &) = default;
-  ~Person();
-  int getAge() const;
+  virtual ~Person();
   virtual std::string getName() const;
   virtual std::string getCpf() const;
   virtual std::string getAdress() const;
   virtual std::string getGender() const;
-  virtual int getAge();
-  void printPersonalInfo() const;
+  virtual int getAge() const;
+  void printInfo() const;
 };
 
 #endif

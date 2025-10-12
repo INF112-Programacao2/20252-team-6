@@ -11,12 +11,12 @@ private:
 
 public:
   Patient(std::string name, std::string cpf, std::string adress, std::string gender,
-          int age, std::string diabetesType, std::string bloodType);
+          int age, std::string diabetesType, std::string bloodType, double weight, double height);
   ~Patient();
-  std::string getDiabetesType();
-  std::string getBloodType();
-  double getWeight();
-  double getHeight();
+  std::string getDiabetesType() const;
+  std::string getBloodType() const;
+  double getWeight() const;
+  double getHeight() const;
   void makeAppointment();
   void cancelAppointment();
   void bookExam();
