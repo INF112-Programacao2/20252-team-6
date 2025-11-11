@@ -1,0 +1,86 @@
+classDiagram
+    class Pessoa{
+        -string cpf
+        -string nome
+        -string genero
+        -int idade
+        -string endereco
+        -string senha
+        +void imprimirInformacoes()*
+    }
+    class Paciente{
+        -string tipoDiabetes
+        -string tipoSanguineo
+        -double altura
+        -double peso
+        +void marcarConsulta()
+        +void cancelarConsulta()
+        +void agendarExame()
+        +void cancelarExame()
+        +void imprimirEstadoClinico()
+        +void registrarDadosClinicos()
+        +void imprimirInformacoes()*
+    }
+    
+    Pessoa <|-- Paciente 
+    
+    class PlanoAlimentar{
+        -string alimentosEvitados
+        -string nutricionista
+        -int proteinas
+        -int gordura
+        -int carboidrato
+        -string vitaminas
+        +registrar_planoAlimentar()
+        +change_planoAlimentar()
+
+    }
+
+    class Medicacao {
+      -string nome
+      -string dosagem
+      -string tipo
+      +imprimirInformacoes()
+    }
+
+    class RegistroSaude  {
+      <<Abstract>>
+      -Paciente paciente
+      -string data
+      -string hora
+      +exibirDetalhes()*
+    }
+
+    class RegistroGlicose  {
+      -float nivel_glicose
+      -string condicao
+      +exibirDetalhes()
+    }
+
+    class RegistroConsulta  {
+      -string nomeMedico
+      -string especialidade
+      -string anotacoes
+      -string local
+      +exibirDetalhes()
+    }
+
+    class RegistroExame {
+      -string nomeExame
+      -string resultado
+      -string laboratorio
+      +exibirDetalhes()
+    }
+
+    class RegistroMedicacao{
+        Medicacao remedio
+        +exibirInforamcoess()
+    }
+
+    Medicacao "1" *-- "0..*" RegistroMedicacao : possui
+    Paciente "1" *-- "0..*" RegistroSaude :  usadoEm
+    Paciente  "1"*--"1" PlanoAlimentar : possui
+    RegistroSaude <|-- RegistroMedicacao
+    RegistroSaude <|-- RegistroGlicose
+    RegistroSaude <|-- RegistroConsulta
+    RegistroSaude <|-- RegistroExame
