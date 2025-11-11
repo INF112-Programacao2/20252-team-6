@@ -6,7 +6,7 @@ classDiagram
         -int idade
         -string endereco
         -string senha
-        +void imprimirInformacoes()*
+        +void imprimirInformacoes()
     }
     class Paciente{
         -string tipoDiabetes
@@ -19,7 +19,7 @@ classDiagram
         +void cancelarExame()
         +void imprimirEstadoClinico()
         +void registrarDadosClinicos()
-        +void imprimirInformacoes()*
+        +void imprimirInformacoes()
     }
     
     Pessoa <|-- Paciente 
@@ -48,7 +48,7 @@ classDiagram
       -Paciente paciente
       -string data
       -string hora
-      +exibirDetalhes()*
+      +exibirDetalhes()
     }
 
     class RegistroGlicose  {
@@ -74,7 +74,7 @@ classDiagram
 
     class RegistroMedicacao{
         Medicacao remedio
-        +exibirInforamcoess()
+        +exibirDetalhes()
     }
 
     Medicacao "1" *-- "0..*" RegistroMedicacao : possui
