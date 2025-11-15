@@ -5,9 +5,12 @@
 #include "include/Person.hpp"
 
 int main(){
-    Patient Davi("Davi", "12345678901", "Rua Presidente Carvalho, 175", "Masculino", 12345, "pre-diabetes", "O-", 80, 1.70);
-    MealPlan mp("Refrigerante, chocolate", "Sandra", "B12, A", 120, 200, 20, Davi);
+    Patient Pedro("Pedro", "12345678901", "Rua Presidente Carvalho, 175",
+    "Masculino", 12345, "pre-diabetes", "O-", 80, 1.70);
+    MealPlan mp("Refrigerante, chocolate", "Sandra", "B12, C", 120, 200, 20, Pedro);
     int id=1;
     mp.register_mealPlan(id);
+    //testando função de buscar id
+    std::cout<<Pedro.searchId(Pedro);
     return 0;
 }
