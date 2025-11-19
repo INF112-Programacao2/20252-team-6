@@ -19,6 +19,6 @@ class MealPlan{
     int protein, int carbohydrate, int fat, Patient patient);
     ~MealPlan();
     void register_mealPlan(int id);
-    void change_mealPlan(Patient patient);
+    void change_mealPlan(int id);
 };
 #endif

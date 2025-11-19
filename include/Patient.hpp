@@ -24,7 +24,7 @@ public:
   void printClinicalState();
   void registerClinicalData();
   void imprimirRegister();
-  int searchId(Patient& patient);
+  int searchId();
 };
 
 #endif

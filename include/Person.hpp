@@ -11,7 +11,7 @@ private:
   const std::string gender;
   int age;
   const std::string adress;
-  const std::map<std::string, std::string> loginPassword;
+  const std::string password;
 
 public:
   Person(std::string name, std::string cpf, std::string adress,
