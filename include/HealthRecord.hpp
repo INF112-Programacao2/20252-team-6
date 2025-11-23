@@ -6,16 +6,17 @@
 class HealthRecord
 {
 private:
-    Patient patient;
+    const Patient& patient;
     std::string date;
     std::string hour;
 public:
-    HealthRecord(Patient patient, std::string date, std::string hour);
+    HealthRecord(const Patient& patient, std::string date, std::string hour);
     virtual ~HealthRecord();
     virtual void  registerDB(int id);
-    virtual void displayDetails()=0;
+    virtual void displayDetails();
     std::string getHour();
     std::string getDate();
+    Patient getPatient();
 };
 
 #endif

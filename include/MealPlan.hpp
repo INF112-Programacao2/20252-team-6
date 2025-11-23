@@ -12,11 +12,11 @@ class MealPlan{
     int protein;
     int carbohydrate;
     int fat;
-    Patient patient;
+    const Patient& patient;
     public:
-    MealPlan(Patient patient, int id);
+    MealPlan(const Patient& patient, int id);
     MealPlan(std::string foodAvoided, std::string nutricionist, std::string vitamins,
-    int protein, int carbohydrate, int fat, Patient patient);
+    int protein, int carbohydrate, int fat, const Patient& patient);
     ~MealPlan();
     void register_mealPlan(int id);
     void change_mealPlan(int id);

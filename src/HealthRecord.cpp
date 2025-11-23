@@ -4,7 +4,7 @@
 #include <string>
 #include <sqlite3.h>
 
-HealthRecord::HealthRecord(Patient patient, std::string date, std::string hour)
+HealthRecord::HealthRecord(const Patient& patient, std::string date, std::string hour)
     : patient(patient), date(date), hour(hour){}
 
 HealthRecord::~HealthRecord(){}
@@ -50,4 +50,9 @@ std::string HealthRecord::getHour(){
 
 void HealthRecord::displayDetails() {
     std::cout << "Data: " << date << ", Hora: " << hour << std::endl;
+}
+
+
+Patient HealthRecord::getPatient(){
+    return patient;
 }

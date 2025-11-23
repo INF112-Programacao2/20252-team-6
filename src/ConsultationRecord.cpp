@@ -1,33 +1,33 @@
-#include "../include/ExamRecord.hpp"
-#include "../include/Patient.hpp"
+#include "../include/ConsultationRecord.hpp"
 #include "../include/HealthRecord.hpp"
-#include<iostream>
-#include<string>
-#include<sqlite3.h>
+#include "../include/Patient.hpp"
+#include <string>
+#include <iostream>
+#include <sqlite3.h>
 
-ExamRecord::ExamRecord(const Patient& patient, std::string date, std::string hour, std::string nameExam,
-     std::string result, std::string lab,std::string doctor)
-    : HealthRecord(patient, date, hour), nameExam(nameExam), result(result), lab(lab), doctor(doctor){}
+ConsultationRecord::ConsultationRecord(const Patient& patient, std::string date, std::string hour,
+    std::string doctor, std::string specialty, std::string descrition, std::string location)
+: HealthRecord(patient, date, hour), doctor(doctor), specialty(specialty), descrition(descrition), location(location){}
 
-ExamRecord::~ExamRecord(){}
+ConsultationRecord::~ConsultationRecord(){}
 
-std::string ExamRecord::getName(){
-    return nameExam;
-}
-
-std::string ExamRecord::getLab(){
-    return lab;
-}
-
-std::string ExamRecord::getResult(){
-    return result;
-}
-
-std::string ExamRecord::getDoctor(){
+std::string ConsultationRecord::getDoctor(){
     return doctor;
 }
 
-void ExamRecord::registerDB(int id){
+std::string ConsultationRecord::getSpecialty(){
+    return specialty;
+}
+
+std::string ConsultationRecord::getDescrition(){
+    return descrition;
+}
+
+std::string ConsultationRecord::getLocation(){
+    return location;
+}
+
+void ConsultationRecord::registerDB(int id){
     sqlite3* db;
     sqlite3_stmt* stmt;
     sqlite3_stmt* stmt2;
@@ -48,19 +48,19 @@ void ExamRecord::registerDB(int id){
                 std::cout << "Registro se saude inserido com sucesso com sucesso!" << std::endl;
                 sqlite3_finalize(stmt);
                 int idRecord = sqlite3_last_insert_rowid(db);//pega o id da ultima insercao
-                const char* insert2 = "INSERT INTO RegistroExame (RegistroSaude, Nome, Medico, Laboratorio, Resultado) VALUES (?,?,?,?,?)";
+                const char* insert2 = "INSERT INTO RegistroConsulta (RegistroSaude, Medico, Especialidade, Local, Descricao) VALUES (?,?,?,?,?)";
                 if (sqlite3_prepare_v2(db, insert2, -1, &stmt2, nullptr) == SQLITE_OK) {
                         sqlite3_bind_int(stmt2, 1, idRecord);
-                        sqlite3_bind_text(stmt2, 2, this->getName().c_str(), -1, SQLITE_TRANSIENT);
-                        sqlite3_bind_text(stmt2, 3, this->getDoctor().c_str(), -1, SQLITE_TRANSIENT);
-                        sqlite3_bind_text(stmt2, 4, this->getLab().c_str(), -1, SQLITE_TRANSIENT);
-                        sqlite3_bind_text(stmt2, 5, this->getResult().c_str(), -1, SQLITE_TRANSIENT);
+                        sqlite3_bind_text(stmt2, 2, this->getDoctor().c_str(), -1, SQLITE_TRANSIENT);
+                        sqlite3_bind_text(stmt2, 3, this->getSpecialty().c_str(), -1, SQLITE_TRANSIENT);
+                        sqlite3_bind_text(stmt2, 4, this->getLocation().c_str(), -1, SQLITE_TRANSIENT);
+                        sqlite3_bind_text(stmt2, 5, this->getDescrition().c_str(), -1, SQLITE_TRANSIENT);
                     if (sqlite3_step(stmt2) == SQLITE_DONE) {
-                        std::cout << "Registro de exame inserido com sucesso com sucesso!" << std::endl;
+                        std::cout << "Registro de consulta inserido com sucesso com sucesso!" << std::endl;
                         sqlite3_finalize(stmt2);
                     } 
                     else {
-                        std::cerr << "Erro ao executar inserção de exame: " << sqlite3_errmsg(db) << std::endl;
+                        std::cerr << "Erro ao executar inserção de consulta: " << sqlite3_errmsg(db) << std::endl;
                         return;
                     }
                 }
@@ -86,8 +86,7 @@ void ExamRecord::registerDB(int id){
     }
 }
 
-
-void ExamRecord::displayDetails() {
-    std::cout << "\nExame: " << nameExam << "\nPaciente: "<< getPatient().getName() <<"\nRequisitado por Dr(a):"<< doctor<< "\nResultado: " << result 
-              << "\nLaboratório: " << lab << std::endl;
+void ConsultationRecord::displayDetails(){
+    std::cout <<"\nPaciente: " << getPatient().getName() << "\nConsulta com Dr(a): " << doctor << " especilista em: " << specialty << "\nDescricao: " << descrition 
+        << "\nLocal: "<< location <<std::endl;
 }

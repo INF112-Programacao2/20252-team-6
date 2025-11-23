@@ -9,16 +9,17 @@ private:
     std::string nameExam;
     std::string result;
     std::string lab;
-    std::string med;
+    std::string doctor;
 public:
-    ExamRecord(Patient patient, std::string date, std::string hour, std::string nameExam, std::string result, std::string lab, std::string med);
+    ExamRecord(const Patient& patient, std::string date, std::string hour, std::string nameExam,
+    std::string result, std::string lab, std::string doctor);
     virtual ~ExamRecord();
     void displayDetails() override;
     void registerDB(int id) override;
     std::string getName();
     std::string getResult();
     std::string getLab();
-    std::string getMed();
+    std::string getDoctor();
 };
 
 #endif

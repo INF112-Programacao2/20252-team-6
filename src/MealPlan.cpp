@@ -4,7 +4,7 @@
 #include"../include/MealPlan.hpp"
 
 MealPlan::MealPlan(std::string foodAvoided, std::string nutricionist, std::string vitamins,
-int protein, int carbohydrate, int fat, Patient patient)
+int protein, int carbohydrate, int fat, const Patient& patient)
 : foodAvoided(foodAvoided), nutricionist(nutricionist), vitamins(vitamins), protein(protein),
 carbohydrate(carbohydrate), fat(fat), patient(patient){}
 
@@ -38,7 +38,8 @@ void MealPlan::register_mealPlan(int id){
         
         // Finalizar statement
         sqlite3_finalize(stmt);
-    } else {
+    } 
+    else {
         std::cerr << "Erro ao preparar SQL: " << sqlite3_errmsg(db) << std::endl;
     }
     sqlite3_close(db);
@@ -167,13 +168,13 @@ void MealPlan::change_mealPlan(int id){
         case 4:
             std::cout << "Digite a quantidade de carboidrato que quer no seu plano: ";
             std::cin>>valor_int;
-            update_int(id, "Carboidratos", valor_int);
+            update_int(id, "Carboidrato", valor_int);
             carbohydrate = valor_int;
             break;
         case 5:
             std::cout << "Digite a quantidade de gordura que quer no seu plano: ";
             std::cin>>valor_int;
-            update_int(id, "Gorduras", valor_int);
+            update_int(id, "Gordura", valor_int);
             fat = valor_int;
             break;
         case 6:
