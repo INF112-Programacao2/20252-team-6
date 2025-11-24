@@ -1,6 +1,5 @@
 #ifndef PERSON_HPP
 #define PERSON_HPP
-#include <map>
 #include <string>
 
 class Person
@@ -15,17 +14,18 @@ private:
 
 public:
   Person(std::string name, std::string cpf, std::string adress,
-         std::string gender, int age);
+         std::string gender, int age, std::string password);
   Person(Person &&) = default;
   Person(const Person &) = default;
   Person &operator=(Person &&) = default;
   Person &operator=(const Person &) = default;
-  virtual ~Person();
+  virtual ~Person() = default;
   virtual std::string getName() const;
   virtual std::string getCpf() const;
   virtual std::string getAdress() const;
   virtual std::string getGender() const;
   virtual int getAge() const;
+  virtual std::string getPassword() const;
   void printInfo() const;
 };
 

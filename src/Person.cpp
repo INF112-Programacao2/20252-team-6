@@ -2,14 +2,14 @@
 #include <iostream>
 
 Person::Person(std::string name, std::string cpf, std::string adress,
-               std::string gender, int age) : cpf(cpf), name(name), gender(gender), age(age), adress(adress) {}
+               std::string gender, int age, std::string password) : cpf(cpf), name(name), gender(gender), age(age), adress(adress), password(password) {}
 
-Person::~Person() {}
 std::string Person::getName() const { return this->name; }
 std::string Person::getCpf() const { return this->cpf; }
 std::string Person::getAdress() const { return this->adress; }
 std::string Person::getGender() const { return this->gender; }
 int Person::getAge() const { return this->age; }
+std::string Person::getPassword() const { return this->password; }
 void Person::printInfo() const
 {
   std::cout << "Nome: " << this->name << "\n";
