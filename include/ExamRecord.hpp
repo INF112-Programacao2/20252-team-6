@@ -16,6 +16,7 @@ public:
     virtual ~ExamRecord();
     void displayDetails() override;
     void registerDB(int id) override;
+    void displayDetailsDB(int id) override;
     std::string getName();
     std::string getResult();
     std::string getLab();

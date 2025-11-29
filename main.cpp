@@ -16,5 +16,6 @@ int main(){
     //hr.registerDB(id);
     ExamRecord er(Pedro, "19/11/2025", "08:00", "Hemograma", "alta '%' de acucar no sangue", "Lab Central", "Carlos Santos");
     er.registerDB(id);
+    er.displayDetailsDB(id);
     return 0;
 }
