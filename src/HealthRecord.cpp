@@ -52,6 +52,10 @@ void HealthRecord::displayDetails() {
     std::cout << "Data: " << date << ", Hora: " << hour << std::endl;
 }
 
+void HealthRecord::displayDetailsDB(int id) {
+    std::cout << "Data: " << date << ", Hora: " << hour << std::endl;
+}
+
 
 Patient HealthRecord::getPatient(){
     return patient;

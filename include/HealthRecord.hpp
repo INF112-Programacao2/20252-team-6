@@ -14,6 +14,7 @@ public:
     virtual ~HealthRecord();
     virtual void  registerDB(int id);
     virtual void displayDetails();
+    virtual void displayDetailsDB(int id);
     std::string getHour();
     std::string getDate();
     Patient getPatient();

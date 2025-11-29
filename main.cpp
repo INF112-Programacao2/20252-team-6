@@ -7,8 +7,7 @@
 #include "include/ExamRecord.hpp"
 
 int main(){
-    Patient Pedro("Pedro Alves", "12345678902", "Rua Presidente Carvalho, 175",
-    "Masculino", 12345, "pre-diabetes", "O-", 80, 1.70);
+    Patient Pedro("Pedro Tavares", "98765432101", "Rua Presidente II, 675", "Marculino", 40, "54321", "Diabetes", "AB+", 90, 1.80);
     MealPlan mp("Refrigerante, chocolate", "Sandra", "B12, C", 120, 200, 20, Pedro);
     int id = Pedro.searchId();
     mp.register_mealPlan(id);
