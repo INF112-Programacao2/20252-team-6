@@ -143,10 +143,10 @@ void Medication::saveToDB()
 
         // Bind dos parâmetros
         sqlite3_bind_int(stmt, 1, patientId);
-        sqlite3_bind_text(stmt, 2, name.c_str(), -1, SQLITE_STATIC);
-        sqlite3_bind_text(stmt, 3, timeStr.str().c_str(), -1, SQLITE_STATIC);
+        sqlite3_bind_text(stmt, 2, name.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt, 3, timeStr.str().c_str(), -1, SQLITE_TRANSIENT);
         sqlite3_bind_double(stmt, 4, dosage);
-        sqlite3_bind_text(stmt, 5, doctor.c_str(), -1, SQLITE_STATIC);
+        sqlite3_bind_text(stmt, 5, doctor.c_str(), -1, SQLITE_TRANSIENT);
 
         // Executa a inserção
         if (sqlite3_step(stmt) != SQLITE_DONE) {

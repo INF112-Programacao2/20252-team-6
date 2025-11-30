@@ -41,8 +41,8 @@ void MedicationRecord::registerDB(int patientId)
         }
 
         sqlite3_bind_int(stmt, 1, patientId);
-        sqlite3_bind_text(stmt, 2, getDate().c_str(), -1, SQLITE_STATIC);
-        sqlite3_bind_text(stmt, 3, getHour().c_str(), -1, SQLITE_STATIC);
+        sqlite3_bind_text(stmt, 2, getDate().c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt, 3, getHour().c_str(), -1, SQLITE_TRANSIENT);
 
         if (sqlite3_step(stmt) != SQLITE_DONE) {
             throw std::runtime_error(std::string("Erro ao executar inserção em RegistroSaude: ") + sqlite3_errmsg(db));
