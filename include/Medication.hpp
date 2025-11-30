@@ -3,22 +3,30 @@
 #include <string>
 #include "Time.hpp"
 
+// Classe que representa um medicamento prescrito para um paciente
+// Guarda nome, princípio ativo, horário de administração, dosagem, etc.
 class Medication
 {
 private:
-  int id;
-  int patientId;
-  const std::string name;
-  const std::string activeIngredient;
-  Time timeMedication;
-  double dosage;
-  const std::string doctor;
+  int id;                          // ID no banco (gerado automaticamente)
+  int patientId;                   // ID do paciente que usa esse medicamento
+  const std::string name;         // Nome do medicamento
+  const std::string activeIngredient;  // Princípio ativo
+  Time timeMedication;            // Horário que deve tomar (composição com Time)
+  double dosage;                  // Dosagem (pode mudar)
+  const std::string doctor;       // Nome do médico que prescreveu
 
 public:
+  // Construtor pra criar novo medicamento (id = -1 inicialmente)
   Medication(int patientId, std::string name, std::string activeIngredient, Time timeMedication, double dosage, std::string doctor);
+  // Construtor pra carregar medicamento do banco (com id já definido)
   Medication(int id, int patientId, std::string name, std::string activeIngredient, Time timeMedication, double dosage, std::string doctor);
   ~Medication();
+  
+  // Mostra todas as infos do medicamento
   void printInfo() const;
+  
+  // Getters
   std::string getName() const;
   std::string getActiveIngredient() const;
   double getDosage() const;
@@ -26,7 +34,11 @@ public:
   int getPatientId() const;
   std::string getDoctor() const;
   Time getTimeMedication() const;
+  
+  // Setter da dosagem (valida antes de setar)
   void setDosage(double dosage);
+  
+  // Salva o medicamento no banco de dados
   void saveToDB();
 };
 

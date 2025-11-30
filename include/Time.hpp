@@ -1,22 +1,34 @@
 #ifndef TIME_HPP
 #define TIME_HPP
+
+// Classe pra representar um horário (hora, minuto, segundo)
+// Valida os valores pra garantir que estão no range correto
 class Time
 {
 private:
-  unsigned short int hour;
-  unsigned short int minute;
-  unsigned short int second;
+  unsigned short int hour;      // Hora (0-23)
+  unsigned short int minute;    // Minuto (0-59)
+  unsigned short int second;    // Segundo (0-59)
+  
+  // Método estático pra validar se os valores são válidos
   static bool isValid(int hour, int minute, int second);
 
 public:
+  // Construtor - valida e lança exceção se inválido
   Time(int hour, int minute, int second);
   ~Time();
+  
+  // Getters
   int getHour() const;
   int getMinute() const;
   int getSecond() const;
+  
+  // Setters - validam antes de setar (lançam exceção se inválido)
   void setHour(int hour);
   void setMinute(int minute);
   void setSecond(int second);
+  
+  // Mostra o horário em formato 24h ou 12h
   void displayTime24() const;
   void displayTime12() const;
 };
