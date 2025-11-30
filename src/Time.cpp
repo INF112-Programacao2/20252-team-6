@@ -1,6 +1,7 @@
 #include <iostream>
 #include "../include/Time.hpp"
 #include <stdexcept>
+#include <sstream>
 
 // Construtor - valida os valores antes de criar
 Time::Time(int hour, int minute, int second)
@@ -13,6 +14,40 @@ Time::Time(int hour, int minute, int second)
   this->minute = minute;
   this->second = second;
 }
+// Construtor a partir de string no formato "HH:MM" ou "HH:MM:SS"
+Time::Time(const std::string& timeStr)
+{
+  std::istringstream iss(timeStr);
+  std::string token;
+  int h = 0, m = 0, s = 0;
+  
+  // Lê a hora
+  if (!std::getline(iss, token, ':')) {
+    throw std::invalid_argument("Formato de hora inválido. Use HH:MM ou HH:MM:SS");
+  }
+  h = std::stoi(token);
+  
+  // Lê o minuto
+  if (!std::getline(iss, token, ':')) {
+    throw std::invalid_argument("Formato de hora inválido. Use HH:MM ou HH:MM:SS");
+  }
+  m = std::stoi(token);
+  
+  // Tenta ler o segundo (opcional)
+  if (std::getline(iss, token, ':')) {
+    s = std::stoi(token);
+  }
+  
+  // Valida e atribui usando o método isValid
+  if (!isValid(h, m, s)) {
+    throw std::invalid_argument("Valores de tempo inválidos.");
+  }
+  
+  this->hour = h;
+  this->minute = m;
+  this->second = s;
+}
+
 Time::~Time(){
 }
 
@@ -36,7 +71,7 @@ int Time::getSecond() const
   return this->second;
 }
 
-// Setters - validam antes de setar (usam isValid pra garantir consistência)
+// Setters - validam antes de setar
 void Time::setHour(int hour)
 {
   if (!isValid(hour, this->minute, this->second)) {

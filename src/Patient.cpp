@@ -2,6 +2,7 @@
 #include "../include/Person.hpp"
 #include "../include/ConsultationRecord.hpp"
 #include "../include/ExamRecord.hpp"
+#include "../include/Time.hpp"
 #include <iostream>
 #include <sqlite3.h>
 #include <algorithm>
@@ -157,7 +158,8 @@ void Patient::makeAppointment(std::string date, std::string hour, std::string do
     
     // Cria e salva consulta no banco
     try {
-        ConsultationRecord consulta(*this, date, hour, doctor, specialty, description, location);
+        Time timeObj(hour);  // Construtor de Time a partir de string
+        ConsultationRecord consulta(*this, date, timeObj, doctor, specialty, description, location);
         consulta.registerDB(patientId);
         std::cout << "Consulta agendada com sucesso!" << std::endl;
     } catch (const std::exception& e) {
@@ -281,7 +283,8 @@ void Patient::bookExam(std::string date, std::string hour, std::string nameExam,
     
     // Cria e salva exame no banco
     try {
-        ExamRecord exame(*this, date, hour, nameExam, result, lab, doctor);
+        Time timeObj(hour);  // Construtor de Time a partir de string
+        ExamRecord exame(*this, date, timeObj, nameExam, result, lab, doctor);
         exame.registerDB(patientId);
         std::cout << "Exame agendado com sucesso!" << std::endl;
     } catch (const std::exception& e) {

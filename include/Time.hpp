@@ -1,6 +1,8 @@
 #ifndef TIME_HPP
 #define TIME_HPP
 
+#include <string>
+
 // Classe pra representar um horário (hora, minuto, segundo)
 // Valida os valores pra garantir que estão no range correto
 class Time
@@ -16,6 +18,10 @@ private:
 public:
   // Construtor - valida e lança exceção se inválido
   Time(int hour, int minute, int second);
+  
+  // Construtor a partir de string no formato "HH:MM" ou "HH:MM:SS"
+  Time(const std::string& timeStr);
+  
   ~Time();
   
   // Getters
