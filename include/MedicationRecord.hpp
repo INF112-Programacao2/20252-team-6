@@ -14,7 +14,7 @@ private:
 
 public:
     // Construtor - recebe paciente, data/hora e o medicamento
-    MedicationRecord(const Patient& patient, std::string date, std::string hour, const Medication& medication);
+    MedicationRecord(const Patient& patient, std::string date, Time hour, const Medication& medication);
     virtual ~MedicationRecord();
     
     // Salva o registro no banco (primeiro em RegistroSaude, depois em RegistroMedicacao)

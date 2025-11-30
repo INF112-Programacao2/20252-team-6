@@ -1,12 +1,14 @@
 #include "../include/ExamRecord.hpp"
 #include "../include/Patient.hpp"
 #include "../include/HealthRecord.hpp"
+#include "../include/Time.hpp"
 #include<iostream>
 #include<string>
+#include<sstream>
 #include<sqlite3.h>
 #include<iomanip>
 
-ExamRecord::ExamRecord(const Patient& patient, std::string date, std::string hour, std::string nameExam,
+ExamRecord::ExamRecord(const Patient& patient, std::string date, Time hour, std::string nameExam,
      std::string result, std::string lab,std::string doctor)
     : HealthRecord(patient, date, hour), nameExam(nameExam), result(result), lab(lab), doctor(doctor){}
 
@@ -39,11 +41,17 @@ void ExamRecord::registerDB(int id){
             std::cerr<<"Erro ao abrir database"<<std::endl;
             return;
         }
+        // Converte Time para string no formato HH:MM:SS
+        std::ostringstream timeStr;
+        timeStr << std::setfill('0') << std::setw(2) << this->getHour().getHour() << ":"
+                << std::setfill('0') << std::setw(2) << this->getHour().getMinute() << ":"
+                << std::setfill('0') << std::setw(2) << this->getHour().getSecond();
+
         const char* insert = "INSERT INTO RegistroSaude (Paciente, Hora, Data) VALUES (?,?,?)";
         if (sqlite3_prepare_v2(db, insert, -1, &stmt, nullptr) == SQLITE_OK) {
             //Vincular parâmetros as variaveis
             sqlite3_bind_int(stmt, 1, id);//id referente ao paciente, sera passado na main
-            sqlite3_bind_text(stmt, 2, this->getHour().c_str(), -1, SQLITE_TRANSIENT);
+            sqlite3_bind_text(stmt, 2, timeStr.str().c_str(), -1, SQLITE_TRANSIENT);
             sqlite3_bind_text(stmt, 3, this->getDate().c_str(), -1, SQLITE_TRANSIENT);
             if (sqlite3_step(stmt) == SQLITE_DONE) {
                 std::cout << "Registro se saude inserido com sucesso com sucesso!" << std::endl;

@@ -12,7 +12,7 @@ private:
   int patientId;                   // ID do paciente que usa esse medicamento
   const std::string name;         // Nome do medicamento
   const std::string activeIngredient;  // Princípio ativo
-  Time timeMedication;            // Horário que deve tomar (composição com Time)
+  Time timeMedication;            // Intervalo entre administrações 
   double dosage;                  // Dosagem (pode mudar)
   const std::string doctor;       // Nome do médico que prescreveu
 

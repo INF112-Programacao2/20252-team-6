@@ -11,7 +11,7 @@ private:
     std::string lab;
     std::string doctor;
 public:
-    ExamRecord(const Patient& patient, std::string date, std::string hour, std::string nameExam,
+    ExamRecord(const Patient& patient, std::string date, Time hour, std::string nameExam,
     std::string result, std::string lab, std::string doctor);
     virtual ~ExamRecord();
     void displayDetails() override;

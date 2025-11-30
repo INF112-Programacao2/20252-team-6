@@ -63,7 +63,7 @@ void Medication::printInfo() const
 {
   std::cout << "Nome: " << this->name << "\n";
   std::cout << "Principio Ativo: " << this->activeIngredient << "\n";
-  std::cout << "Horario: ";
+  std::cout << "Intervalo: ";
   this->timeMedication.displayTime24();
   std::cout << "Dosagem: " << this->dosage << "\n";
   std::cout << "Medico: " << this->doctor << "\n";

@@ -8,7 +8,7 @@ class GlucoseRecord : public HealthRecord{
     int glucoseLevel;
     bool fast;//jejum
     public:
-    GlucoseRecord(const Patient& patient, std::string date, std::string hour, int glucoseLevel, bool fast);
+    GlucoseRecord(const Patient& patient, std::string date, Time hour, int glucoseLevel, bool fast);
     virtual ~GlucoseRecord();
     void displayDetails() override;
     void registerDB(int id) override;

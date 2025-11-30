@@ -3,11 +3,13 @@
 #include "../include/Patient.hpp"
 #include "../include/Medication.hpp"
 #include <iostream>
+#include <sstream>
+#include <iomanip>
 #include <sqlite3.h>
 #include <stdexcept>
 
 // Construtor - inicializa HealthRecord e guarda referência pro medicamento
-MedicationRecord::MedicationRecord(const Patient& patient, std::string date, std::string hour, const Medication& medication)
+MedicationRecord::MedicationRecord(const Patient& patient, std::string date, Time hour, const Medication& medication)
     : HealthRecord(patient, date, hour), medication(medication)
 {
 }
@@ -40,9 +42,15 @@ void MedicationRecord::registerDB(int patientId)
             throw std::runtime_error(std::string("Erro ao preparar consulta (RegistroSaude): ") + sqlite3_errmsg(db));
         }
 
+        // Converte Time para string no formato HH:MM:SS
+        std::ostringstream timeStr;
+        timeStr << std::setfill('0') << std::setw(2) << getHour().getHour() << ":"
+                << std::setfill('0') << std::setw(2) << getHour().getMinute() << ":"
+                << std::setfill('0') << std::setw(2) << getHour().getSecond();
+
         sqlite3_bind_int(stmt, 1, patientId);
         sqlite3_bind_text(stmt, 2, getDate().c_str(), -1, SQLITE_TRANSIENT);
-        sqlite3_bind_text(stmt, 3, getHour().c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt, 3, timeStr.str().c_str(), -1, SQLITE_TRANSIENT);
 
         if (sqlite3_step(stmt) != SQLITE_DONE) {
             throw std::runtime_error(std::string("Erro ao executar inserção em RegistroSaude: ") + sqlite3_errmsg(db));
@@ -106,11 +114,12 @@ void MedicationRecord::displayDetails()
 {
     std::cout << "\n=== Registro de Medicação ===" << std::endl;
     std::cout << "Data: " << getDate() << std::endl;
-    std::cout << "Hora: " << getHour() << std::endl;
+    std::cout << "Hora: ";
+    getHour().displayTime24();
     std::cout << "Medicamento: " << medication.getName() << std::endl;
     std::cout << "Princípio Ativo: " << medication.getActiveIngredient() << std::endl;
     std::cout << "Dosagem: " << medication.getDosage() << std::endl;
-    std::cout << "Horário de administração: ";
+    std::cout << "Intervalo de administração: ";
     medication.getTimeMedication().displayTime24();
     std::cout << "Médico responsável: " << medication.getDoctor() << std::endl;
     std::cout << "Paciente: " << getPatient().getName() << std::endl;

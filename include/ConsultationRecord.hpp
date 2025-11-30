@@ -11,7 +11,7 @@ class ConsultationRecord : public HealthRecord{
     std::string descrition;
     std::string location;
     public:
-    ConsultationRecord(const Patient& patient, std::string date, std::string hour,
+    ConsultationRecord(const Patient& patient, std::string date, Time hour,
     std::string doctor, std::string specialty, std::string descrition, std::string location);
     virtual ~ConsultationRecord();
     void displayDetails() override;
