@@ -1,5 +1,5 @@
 #include <iostream>
-#include "Time.hpp"
+#include "../include/Time.hpp"
 #include <stdexcept>
 
 // Construtor - valida os valores antes de criar

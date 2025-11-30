@@ -140,50 +140,82 @@ void MealPlan::change_mealPlan(int id){
         std::cout<<"\n6 - Alimentos a evitar";
         std::cout<<"\n7 - Parar alteracoes\n\n";
 
-        std::cin>>option;
+        if(std::cin>>option){
+        } else {
+            std::cerr << "Erro ao ler um numero inteiro\n";
+            std::cin.clear();
+            break;
+        }
         std::string valor_string;
         int valor_int;
         switch (option)
         {
         case 1:
-            std::cout << "Digite o novo nutricionista: ";
+           std::cout << "Digite o novo nutricionista: ";
             std::cin.ignore();
-            std::getline(std::cin, valor_string);
+            if(std::getline(std::cin, valor_string)){
             update_string(id, "Nutricionista", valor_string);
             nutricionist = valor_string;
             break;
+            } else {
+                std::cerr << "Erro ao ler STRING nutricionista\n";
+                break;
+            }
         case 2:
             std::cout << "Digite as vitaminas que quer no seu plano: ";
             std::cin.ignore();
-            std::getline(std::cin, valor_string);
+            if(std::getline(std::cin, valor_string)){
             update_string(id, "Vitaminas", valor_string);
             vitamins = valor_string;
             break;
+            } else {
+                std::cerr << "Erro ao ler STRING vitaminas\n";
+                break;
+            }
         case 3:
             std::cout << "Digite a quantidade de proteinas que quer no seu plano: ";
-            std::cin>>valor_int;
+            if(std::cin>>valor_int){
             update_int(id, "Proteinas", valor_int);
             protein = valor_int;
             break;
+            } else {
+                std::cerr << "Erro ao ler INT proteinas\n";
+                std::cin.clear();
+                break;
+            }
         case 4:
             std::cout << "Digite a quantidade de carboidrato que quer no seu plano: ";
-            std::cin>>valor_int;
+            if(std::cin>>valor_int){
             update_int(id, "Carboidrato", valor_int);
             carbohydrate = valor_int;
             break;
+            } else {
+                std::cerr << "Erro ao ler INT carboidrato\n";
+                std::cin.clear();
+                break;
+            }
         case 5:
             std::cout << "Digite a quantidade de gordura que quer no seu plano: ";
-            std::cin>>valor_int;
+            if(std::cin>>valor_int){
             update_int(id, "Gordura", valor_int);
             fat = valor_int;
             break;
+            } else {
+                std::cerr << "Erro ao ler INT gordura\n";
+                std::cin.clear();
+                break;
+            }
         case 6:
             std::cout << "Digite os alimentos a serem evitados no seu plano: ";
             std::cin.ignore();
-            std::getline(std::cin, valor_string);
+            if(std::getline(std::cin, valor_string)){
             update_string(id, "AlimentosEvitados", valor_string);
             foodAvoided = valor_string;
             break;
+            } else {
+                std::cerr << "Erro ao ler STRING alimentos evitados\n";
+                break;
+            }
         default:
             continuos = false;
             break;
