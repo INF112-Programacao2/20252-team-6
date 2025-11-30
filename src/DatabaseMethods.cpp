@@ -285,7 +285,7 @@ void DatabaseMethods::displayDetailsGlucoseRecordDB(int id) {
 }
 
 void DatabaseMethods::displayDetailsMedicationRecordDB(int id){
-        sqlite3* db;
+   sqlite3* db;
     sqlite3_stmt* stmt;
     
     try {
@@ -369,4 +369,117 @@ void DatabaseMethods::displayDetailsMedicationRecordDB(int id){
     catch(const std::exception& e) {
         std::cerr << "Exceção: " << e.what() << std::endl;
     }
+}
+
+bool DatabaseMethods::createPatient(){
+    sqlite3* db;
+    sqlite3_stmt* stmt;
+    sqlite3_stmt* stmt2;
+    
+    try {
+        int rc = sqlite3_open("database.db", &db);
+        if (rc != SQLITE_OK) {
+            std::cerr << "Erro ao abrir database: " << sqlite3_errmsg(db) << std::endl;
+            return false;
+        }
+        //pedir dados para criar paciente
+        std::string name, cpf, password = "1", passwordOK = "0", adress, bloodType, dyabetesType;
+        double height, weight;
+        int age, gender=3;
+
+        std::cout << "\nDigite seu nome: ";
+        std::cin.ignore(); 
+        std::getline(std::cin, name);
+        std::cout << "\nColeta de dados necessaria para fins de necessidade do programa!\nDigite seu cpf: ";
+        std::cin >> cpf;
+        std::cout << "\nDigite seu endereço: ";
+        std::cin.ignore(); 
+        std::getline(std::cin, adress);
+        std::cout << "\nDigite sua idade: ";
+        std::cin >> age;
+        while(gender>2||gender<1){
+            std::cout << "\nQual seu genero?(1 p/ masculino e 2 p/ feminino):";
+            std::cin >> gender;
+            if(gender!=1&&gender!=2){
+                std::cout<<"\nOpcao invalida, digite novamente";
+            }
+        }
+        std::cout << "\nDigite seu tipo sanguineo: ";
+        std::cin >> bloodType;
+        std::cout << "\nDigite seu tipo de diabetes: ";
+        std::cin.ignore(); 
+        std::getline(std::cin, dyabetesType);
+        std::cout << "\nDigite seu peso em Kg: ";
+        std::cin >> weight;
+        std::cout << "\nDigite sua altura em metros: ";
+        std::cin >> height;
+        while(password!=passwordOK){
+            std::cout << "\nDigite sua senha: ";
+            std::cin >> password;
+            std::cout << "\nConfirme sua senha: ";
+            std::cin >> passwordOK;
+            if(password!=passwordOK)
+                std::cout << "\nSenhas difentes, digite novamente!";
+        }
+        std::string genderStr;
+        if(gender==1)
+            genderStr = "Masculino";
+        else
+            genderStr = "Feminino";
+
+
+        //inserir dados no banco
+        const char* insert = "INSERT INTO Pessoa (Nome, Idade, Sexo, Cpf, Senha, Endereco) VALUES (?,?,?,?,?,?)";
+        if (sqlite3_prepare_v2(db, insert, -1, &stmt, nullptr) == SQLITE_OK) {
+            //Vincular parâmetros as variaveis
+            sqlite3_bind_text(stmt, 1, name.c_str(), -1, SQLITE_TRANSIENT);
+            sqlite3_bind_int(stmt, 2, age);
+            sqlite3_bind_text(stmt, 3, genderStr.c_str(), -1, SQLITE_TRANSIENT);
+            sqlite3_bind_text(stmt, 4, cpf.c_str(), -1, SQLITE_TRANSIENT);
+            sqlite3_bind_text(stmt, 5, password.c_str(), -1, SQLITE_TRANSIENT);
+            sqlite3_bind_text(stmt, 6, adress.c_str(), -1, SQLITE_TRANSIENT);
+
+            if (sqlite3_step(stmt) == SQLITE_DONE) {
+                std::cout << "Pessoa inserido com sucesso com sucesso!" << std::endl;
+                sqlite3_finalize(stmt);
+                int idPerson = sqlite3_last_insert_rowid(db);//pega o id da ultima insercao
+                const char* insert2 = "INSERT INTO Paciente (Pessoa, Altura, Peso, TipoDiabetes, TipoSanguineo) VALUES (?,?,?,?,?)";
+                if (sqlite3_prepare_v2(db, insert2, -1, &stmt2, nullptr) == SQLITE_OK) {
+                        sqlite3_bind_int(stmt2, 1, idPerson);
+                        sqlite3_bind_double(stmt, 2, weight);
+                        sqlite3_bind_double(stmt, 3, height);
+                        sqlite3_bind_text(stmt2, 4, dyabetesType.c_str(), -1, SQLITE_TRANSIENT);
+                        sqlite3_bind_text(stmt2, 5, bloodType.c_str(), -1, SQLITE_TRANSIENT);
+                    if (sqlite3_step(stmt2) == SQLITE_DONE) {
+                        std::cout << "Paciente registrado com sucesso com sucesso!" << std::endl;
+                        sqlite3_finalize(stmt2);
+                        return true;
+                    } 
+                    else {
+                        std::cerr << "Erro ao executar registro de paciente: " << sqlite3_errmsg(db) << std::endl;
+                        return false;
+                    }
+                }
+                else{
+                    std::cerr << "Erro ao preparar SQL: " << sqlite3_errmsg(db) << std::endl;
+                    return false;
+                }
+            } 
+            else {
+                std::cerr << "Erro ao executar registro de pessoa: " << sqlite3_errmsg(db) << std::endl;
+                sqlite3_finalize(stmt);
+                return false;
+            }
+        }
+        else {
+            std::cerr << "Erro ao preparar SQL: " << sqlite3_errmsg(db) << std::endl;
+            return false;
+        } 
+        sqlite3_close(db);
+    }
+    catch(const std::exception& e) {
+        std::cerr << "Exceção: " << e.what() << std::endl;
+        return false;
+    }
+    return false;
 }
