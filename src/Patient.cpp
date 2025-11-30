@@ -433,10 +433,10 @@ void Patient::saveToDB()
                 throw std::runtime_error(std::string("Erro ao preparar UPDATE (Pessoa): ") + sqlite3_errmsg(db));
             }
 
-            sqlite3_bind_text(stmt, 1, this->getName().c_str(), -1, SQLITE_STATIC);
-            sqlite3_bind_text(stmt, 2, this->getGender().c_str(), -1, SQLITE_STATIC);
-            sqlite3_bind_text(stmt, 3, this->getPassword().c_str(), -1, SQLITE_STATIC);
-            sqlite3_bind_text(stmt, 4, this->getAdress().c_str(), -1, SQLITE_STATIC);
+            sqlite3_bind_text(stmt, 1, this->getName().c_str(), -1, SQLITE_TRANSIENT);
+            sqlite3_bind_text(stmt, 2, this->getGender().c_str(), -1, SQLITE_TRANSIENT);
+            sqlite3_bind_text(stmt, 3, this->getPassword().c_str(), -1, SQLITE_TRANSIENT);
+            sqlite3_bind_text(stmt, 4, this->getAdress().c_str(), -1, SQLITE_TRANSIENT);
             sqlite3_bind_int(stmt, 5, pessoaId);
 
             if (sqlite3_step(stmt) != SQLITE_DONE) {
@@ -457,11 +457,11 @@ void Patient::saveToDB()
                 throw std::runtime_error(std::string("Erro ao preparar INSERT (Pessoa): ") + sqlite3_errmsg(db));
             }
 
-            sqlite3_bind_text(stmt, 1, this->getName().c_str(), -1, SQLITE_STATIC);
-            sqlite3_bind_text(stmt, 2, this->getCpf().c_str(), -1, SQLITE_STATIC);
-            sqlite3_bind_text(stmt, 3, this->getGender().c_str(), -1, SQLITE_STATIC);
-            sqlite3_bind_text(stmt, 4, this->getPassword().c_str(), -1, SQLITE_STATIC);
-            sqlite3_bind_text(stmt, 5, this->getAdress().c_str(), -1, SQLITE_STATIC);
+            sqlite3_bind_text(stmt, 1, this->getName().c_str(), -1, SQLITE_TRANSIENT);
+            sqlite3_bind_text(stmt, 2, this->getCpf().c_str(), -1, SQLITE_TRANSIENT);
+            sqlite3_bind_text(stmt, 3, this->getGender().c_str(), -1, SQLITE_TRANSIENT);
+            sqlite3_bind_text(stmt, 4, this->getPassword().c_str(), -1, SQLITE_TRANSIENT);
+            sqlite3_bind_text(stmt, 5, this->getAdress().c_str(), -1, SQLITE_TRANSIENT);
 
             if (sqlite3_step(stmt) != SQLITE_DONE) {
                 throw std::runtime_error(std::string("Erro ao executar INSERT (Pessoa): ") + sqlite3_errmsg(db));
