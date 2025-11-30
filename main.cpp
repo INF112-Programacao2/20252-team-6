@@ -10,23 +10,50 @@
 #include "include/DatabaseMethods.hpp"
 
 int main(){
-    Patient Pedro("Pedro Tavares", "98765432101", "Rua Presidente II, 675", "Marculino", 40, "54321", "Diabetes", "AB+", 90, 1.80);
-    MealPlan mp("Refrigerante, chocolate", "Sandra", "B12, C", 120, 200, 20, Pedro);
-    int id = Pedro.searchId();
-    mp.register_mealPlan(id);
-    mp.change_mealPlan(id);
-    ExamRecord er(Pedro, "19/11/2025", "08:00", "Hemograma", "alta '%' de acucar no sangue", "Lab Central", "Carlos Almeida");
-    er.registerDB(id);
-    GlucoseRecord gr(Pedro, "11/11/2025", "11:11", 120, true);
-    gr.registerDB(id);
-    ConsultationRecord cr(Pedro, "25/11/2025", "10:00", "Arthur Cardoso",
-        "Hematologia", "Problemas na cicatrizacao de feridas", "Clinica Silva");
-    cr.registerDB(id);
+    
+    std::string cpf;
+    std::string senha;
 
-    DatabaseMethods dm;
-    dm.displayDetailsExamRecordDB(id);
-    std::cout<<std::endl;
-    dm.displayDetailsConsultationRecordDB(id);
-    dm.displayDetailsGlucoseRecordDB(id);
+    std::cout << "========== LOGIN ==========\n";
+    std::cout << "Digite seu CPF: ";
+    std::cin >> cpf;
+    std::cout << "Digite sua senha: ";
+    std::cin >> senha;
+
+    // Tipo paciente para usar o metodo de verificacao de LOGIN
+    Patient paciente_temporario {"-", cpf, "-", "-", 1, senha, "-", "-", 1.0, 1.0};
+    Patient* paciente_real = nullptr;
+
+    if (paciente_temporario.login(cpf, senha)) {
+            std::cout << "\n====================================\n";
+            std::cout << "Credenciais Validadas. Carregando dados completos...\n";
+            std::cout << "====================================\n";
+            
+            // Aqui carregamos o paciente REAL
+            paciente_real = Patient::loadFromDB(cpf); 
+
+            if (paciente_real != nullptr) {
+                std::cout << "\n--- Paciente Logado ---\n";
+        
+            } else {
+                std::cout << "Falha: O usuário não é um Paciente ou erro no DB.\n";
+            }
+        } else {
+            std::cout << "\nFalha na tentativa de login.\n";
+        }
+        
+        
+        // Terminar restante da main usando paciente_real!
+        
+        
+        
+        
+        
+        
+        
+        if (paciente_real != nullptr)
+            delete paciente_real;
+
+
     return 0;
 }

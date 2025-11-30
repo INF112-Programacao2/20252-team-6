@@ -50,6 +50,9 @@ public:
   
   // Método estático pra verificar login sem criar objeto
   static bool verifyLogin(const std::string& inputCpf, const std::string& inputPassword);
+
+  // Metodo estatico para carregar as informacoes do banco de dados
+  static Patient* loadFromDB(const std::string& cpf);
 };
 
 #endif
