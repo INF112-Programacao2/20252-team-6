@@ -205,17 +205,20 @@ void DatabaseMethods::displayDetailsGlucoseRecordDB(int id) {
             sqlite3_bind_int(stmt, 1, id);
             
             // Cabeçalho da tabela
-            std::cout << "\n" << std::string(70, '=') << "\n";
+            std::cout << "\n" << std::string(38, '-') << "\n";
             std::cout << "Registros de glicose" << "\n";
-            std::cout << std::string(70, '-') << "\n";
+            std::cout << std::string(38, '-') << "\n";
             
             std::cout << std::left
                       << std::setw(12) << "Glicose"
+                      << "|"
                       << std::setw(8) << "Jejum"
-                      << std::setw(12) << "Data"
-                      << std::setw(10) << "Hora"
+                      << "|"
+                      << std::setw(10) << "Data"
+                      << "|"
+                      << std::setw(5) << "Hora"
                       << "\n";
-            std::cout << std::string(70, '-') << "\n";
+            std::cout << std::string(38, '-') << "\n";
     
             int recordCount = 0;
             
@@ -253,17 +256,107 @@ void DatabaseMethods::displayDetailsGlucoseRecordDB(int id) {
                 // Exibir na tabela
                 std::cout << std::left
                           << std::setw(12) << glucoseLevel
+                          << "|"
                           << std::setw(8) << fastingStr
-                          << std::setw(12) << data
-                          << std::setw(10) << hora
+                          << "|"
+                          << std::setw(10) << data
+                          << "|"
+                          << std::setw(5) << hora
                           << "\n";
                 
                 recordCount++;
             }
             
-            std::cout << std::string(70, '-') << "\n";
+            std::cout << std::string(38, '-') << "\n";
             std::cout << "Total de registros: " << recordCount << "\n";
-            std::cout << std::string(70, '-') << "\n";
+            std::cout << std::string(38, '-') << "\n";
+            
+            sqlite3_finalize(stmt);
+        }
+        else {
+            std::cerr << "Erro ao preparar consulta: " << sqlite3_errmsg(db) << std::endl;
+        }
+        
+        sqlite3_close(db);
+    }
+    catch(const std::exception& e) {
+        std::cerr << "Exceção: " << e.what() << std::endl;
+    }
+}
+
+void DatabaseMethods::displayDetailsMedicationRecordDB(int id){
+        sqlite3* db;
+    sqlite3_stmt* stmt;
+    
+    try {
+        int rc = sqlite3_open("database.db", &db);
+        if (rc != SQLITE_OK) {
+            std::cerr << "Erro ao abrir database: " << sqlite3_errmsg(db) << std::endl;
+            return;
+        }
+
+        const char* query = 
+            "SELECT m.Nome, m.Horario, m.Dosagem, m.Medico , rs.Data, rs.Hora "
+            "FROM RegistroMedicacao rm "
+            "JOIN Medicacao m ON rm.Medicacao = m.Id "
+            "JOIN RegistroSaude rs ON rm.RegistroSaude = rs.Id "
+            "WHERE rs.Paciente = ? "
+            "ORDER BY rs.Data DESC, rs.Hora DESC";
+            
+        if (sqlite3_prepare_v2(db, query, -1, &stmt, nullptr) == SQLITE_OK) {
+            sqlite3_bind_int(stmt, 1, id);
+            
+            // Cabeçalho da tabela
+            std::cout << "\n" << std::string(89, '-') << "\n";
+            std::cout << "Registros de Medicacoes" << "\n";
+            std::cout << std::string(89, '-') << "\n";
+            
+            std::cout << std::left
+                      << std::setw(20) << "Medicamento"
+                      << "|"
+                      << std::setw(20) << "Horario"
+                      << "|"
+                      << std::setw(20) << "Medico"
+                      << "|"
+                      << std::setw(9) << "Dosagem"
+                      << "|"
+                      << std::setw(10) << "Data"
+                      << "|"
+                      << std::setw(5) << "Hora"
+                      << "\n";
+            std::cout << std::string(89, '-') << "\n";
+    
+            int recordCount = 0;
+            
+             while (sqlite3_step(stmt) == SQLITE_ROW) {
+                std::string medication = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
+                std::string hours = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+                std::string doctor = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
+                double dosage = sqlite3_column_double(stmt, 3);
+                std::string date = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4));
+                std::string time = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5));
+                    
+                // Exibir na tabela
+                std::cout << std::left
+                      << std::setw(20) << medication
+                      << "|"
+                      << std::setw(20) << hours
+                      << "|"
+                      << std::setw(20) << doctor
+                      << "|"
+                      << std::setw(7) << dosage << "mg"
+                      << "|"
+                      << std::setw(8) << date
+                      << "|"
+                      << std::setw(5) << time
+                      << "\n";
+                
+                recordCount++;
+            }
+            
+            std::cout << std::string(89, '-') << "\n";
+            std::cout << "Total de registros: " << recordCount << "\n";
+            std::cout << std::string(89, '-') << "\n";
             
             sqlite3_finalize(stmt);
         }

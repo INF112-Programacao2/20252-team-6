@@ -10,6 +10,7 @@ public:
     void displayDetailsExamRecordDB(int id);
     void displayDetailsConsultationRecordDB(int id);
     void displayDetailsGlucoseRecordDB(int id);
+    void displayDetailsMedicationRecordDB(int id);
 };
 #endif
 
