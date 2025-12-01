@@ -24,6 +24,9 @@ Medication::Medication(int patientId, std::string name, std::string activeIngred
     if (dosage <= 0) {
         throw std::invalid_argument("Dosagem deve ser maior que zero.");
     }
+    if (dosage > 10000) {
+        throw std::invalid_argument("Dosagem inválida. Máximo 10000 mg.");
+    }
     if (doctor.empty()) {
         throw std::invalid_argument("Nome do médico não pode ser vazio.");
     }
@@ -50,6 +53,9 @@ Medication::Medication(int id, int patientId, std::string name, std::string acti
     }
     if (dosage <= 0) {
         throw std::invalid_argument("Dosagem deve ser maior que zero.");
+    }
+    if (dosage > 10000) {
+        throw std::invalid_argument("Dosagem inválida. Máximo 10000 mg.");
     }
     if (doctor.empty()) {
         throw std::invalid_argument("Nome do médico não pode ser vazio.");
@@ -110,6 +116,9 @@ void Medication::setDosage(double dosage)
 {
   if (dosage <= 0) {
     throw std::invalid_argument("Dosagem deve ser maior que zero.");
+  }
+  if (dosage > 10000) {
+    throw std::invalid_argument("Dosagem inválida. Máximo 10000 mg.");
   }
   this->dosage = dosage;
 }

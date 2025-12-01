@@ -2,6 +2,7 @@
 #include "../include/Time.hpp"
 #include <stdexcept>
 #include <sstream>
+#include <iomanip>
 
 // Construtor - valida os valores antes de criar
 Time::Time(int hour, int minute, int second)
@@ -21,21 +22,27 @@ Time::Time(const std::string& timeStr)
   std::string token;
   int h = 0, m = 0, s = 0;
   
-  // Lê a hora
-  if (!std::getline(iss, token, ':')) {
+  try {
+    // Lê a hora
+    if (!std::getline(iss, token, ':')) {
+      throw std::invalid_argument("Formato de hora inválido. Use HH:MM ou HH:MM:SS");
+    }
+    h = std::stoi(token);
+    
+    // Lê o minuto
+    if (!std::getline(iss, token, ':')) {
+      throw std::invalid_argument("Formato de hora inválido. Use HH:MM ou HH:MM:SS");
+    }
+    m = std::stoi(token);
+    
+    // Tenta ler o segundo (opcional)
+    if (std::getline(iss, token, ':')) {
+      s = std::stoi(token);
+    }
+  } catch (const std::invalid_argument& e) {
     throw std::invalid_argument("Formato de hora inválido. Use HH:MM ou HH:MM:SS");
-  }
-  h = std::stoi(token);
-  
-  // Lê o minuto
-  if (!std::getline(iss, token, ':')) {
-    throw std::invalid_argument("Formato de hora inválido. Use HH:MM ou HH:MM:SS");
-  }
-  m = std::stoi(token);
-  
-  // Tenta ler o segundo (opcional)
-  if (std::getline(iss, token, ':')) {
-    s = std::stoi(token);
+  } catch (const std::out_of_range& e) {
+    throw std::invalid_argument("Valores de hora muito grandes.");
   }
   
   // Valida e atribui usando o método isValid
@@ -97,9 +104,14 @@ void Time::setSecond(int second)
 // Mostra horário em formato 12h (AM/PM)
 void Time::displayTime12() const
 {
-  std::cout << (hour < 10 ? "0" : "") << this->hour % 12 << ":"
+  int h12 = this->hour % 12;
+  if (h12 == 0) h12 = 12; // Meia-noite e meio-dia são 12
+  
+  std::string period = (this->hour < 12) ? "AM" : "PM";
+  
+  std::cout << (h12 < 10 ? "0" : "") << h12 << ":"
             << (minute < 10 ? "0" : "") << this->minute << ":"
-            << (second < 10 ? "0" : "") << this->second << std::endl;
+            << (second < 10 ? "0" : "") << this->second << " " << period << std::endl;
 }
 
 // Mostra horário em formato 24h
@@ -108,4 +120,14 @@ void Time::displayTime24() const
   std::cout << (hour < 10 ? "0" : "") << this->hour << ":"
             << (minute < 10 ? "0" : "") << this->minute << ":"
             << (second < 10 ? "0" : "") << this->second << std::endl;
+}
+
+// Converte Time pra string (formato HH:MM:SS)
+std::string Time::toString() const
+{
+  std::ostringstream oss;
+  oss << (hour < 10 ? "0" : "") << this->hour << ":"
+      << (minute < 10 ? "0" : "") << this->minute << ":"
+      << (second < 10 ? "0" : "") << this->second;
+  return oss.str();
 }

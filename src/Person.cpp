@@ -30,6 +30,16 @@ std::string Person::getGender() const { return this->gender; }
 int Person::getAge() const { return this->age; }
 std::string Person::getPassword() const { return this->password; }
 
+void Person::setAge(int age) {
+    if (age < 0) {
+        throw std::invalid_argument("Idade não pode ser negativa.");
+    }
+    if (age > 150) {
+        throw std::invalid_argument("Idade inválida. Máximo 150 anos.");
+    }
+    this->age = age;
+}
+
 // Printa todas as infos da pessoa de forma organizada
 void Person::printInfo() const
 {

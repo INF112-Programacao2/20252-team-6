@@ -10,6 +10,7 @@
 #include <locale>
 #include <string>
 #include <stdexcept>
+#include <vector>
 
 // Construtor - chama construtor de Person e adiciona validações médicas
 Patient::Patient(std::string name, std::string cpf, std::string adress,
@@ -31,6 +32,10 @@ Patient::Patient(std::string name, std::string cpf, std::string adress,
     if (bloodType.empty()) {
         throw std::invalid_argument("Tipo sanguíneo não pode ser vazio.");
     }
+    // Valida formato do tipo sanguíneo
+    if (!isValidBloodType(bloodType)) {
+        throw std::invalid_argument("Tipo sanguíneo inválido. Use: A+, A-, B+, B-, AB+, AB-, O+ ou O-");
+    }
 }
 
 // Getters simples dos dados médicos
@@ -49,6 +54,41 @@ double Patient::getWeight() const
 double Patient::getHeight() const
 {
   return this->height;
+}
+
+// Valida tipo sanguíneo (A+, A-, B+, B-, AB+, AB-, O+, O-)
+bool Patient::isValidBloodType(const std::string& bloodType) {
+    const std::vector<std::string> validTypes = {
+        "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"
+    };
+    
+    // Converte pra maiúsculas
+    std::string upper = bloodType;
+    std::transform(upper.begin(), upper.end(), upper.begin(), ::toupper);
+    
+    return std::find(validTypes.begin(), validTypes.end(), upper) != validTypes.end();
+}
+
+
+void Patient::setWeight(double weight) {
+    if (weight <= 0) {
+        throw std::invalid_argument("Peso deve ser maior que zero.");
+    }
+    if (weight > 500) {
+        throw std::invalid_argument("Peso inválido. Máximo 500 kg.");
+    }
+    this->weight = weight;
+}
+
+
+void Patient::setHeight(double height) {
+    if (height <= 0) {
+        throw std::invalid_argument("Altura deve ser maior que zero.");
+    }
+    if (height > 3.0) {
+        throw std::invalid_argument("Altura inválida. Máximo 3.0 metros.");
+    }
+    this->height = height;
 }
 
 // Login - verifica CPF e senha no banco de dados
@@ -774,7 +814,7 @@ void Patient::saveToDB()
             stmt = nullptr;
 
             // UPDATE na tabela Pessoa
-            const char* sqlUpdate = "UPDATE Pessoa SET Nome = ?, Sexo = ?, Senha = ?, Endereco = ? WHERE id = ?";
+            const char* sqlUpdate = "UPDATE Pessoa SET Nome = ?, Sexo = ?, Senha = ?, Endereco = ?, Idade = ? WHERE id = ?";
             
             if (sqlite3_prepare_v2(db, sqlUpdate, -1, &stmt, nullptr) != SQLITE_OK) {
                 throw std::runtime_error(std::string("Erro ao preparar UPDATE (Pessoa): ") + sqlite3_errmsg(db));
@@ -784,7 +824,8 @@ void Patient::saveToDB()
             sqlite3_bind_text(stmt, 2, this->getGender().c_str(), -1, SQLITE_TRANSIENT);
             sqlite3_bind_text(stmt, 3, this->getPassword().c_str(), -1, SQLITE_TRANSIENT);
             sqlite3_bind_text(stmt, 4, this->getAdress().c_str(), -1, SQLITE_TRANSIENT);
-            sqlite3_bind_int(stmt, 5, pessoaId);
+            sqlite3_bind_int(stmt, 5, this->getAge());
+            sqlite3_bind_int(stmt, 6, pessoaId);
 
             if (sqlite3_step(stmt) != SQLITE_DONE) {
                 throw std::runtime_error(std::string("Erro ao executar UPDATE (Pessoa): ") + sqlite3_errmsg(db));
@@ -798,7 +839,7 @@ void Patient::saveToDB()
             sqlite3_finalize(stmt);
             stmt = nullptr;
 
-            const char* sqlInsert = "INSERT INTO Pessoa (Nome, Cpf, Sexo, Senha, Endereco) VALUES (?, ?, ?, ?, ?)";
+            const char* sqlInsert = "INSERT INTO Pessoa (Nome, Cpf, Sexo, Senha, Endereco, Idade) VALUES (?, ?, ?, ?, ?, ?)";
             
             if (sqlite3_prepare_v2(db, sqlInsert, -1, &stmt, nullptr) != SQLITE_OK) {
                 throw std::runtime_error(std::string("Erro ao preparar INSERT (Pessoa): ") + sqlite3_errmsg(db));
@@ -809,6 +850,7 @@ void Patient::saveToDB()
             sqlite3_bind_text(stmt, 3, this->getGender().c_str(), -1, SQLITE_TRANSIENT);
             sqlite3_bind_text(stmt, 4, this->getPassword().c_str(), -1, SQLITE_TRANSIENT);
             sqlite3_bind_text(stmt, 5, this->getAdress().c_str(), -1, SQLITE_TRANSIENT);
+            sqlite3_bind_int(stmt, 6, this->getAge());
 
             if (sqlite3_step(stmt) != SQLITE_DONE) {
                 throw std::runtime_error(std::string("Erro ao executar INSERT (Pessoa): ") + sqlite3_errmsg(db));
@@ -835,7 +877,7 @@ void Patient::saveToDB()
             sqlite3_finalize(stmt);
             stmt = nullptr;
 
-            const char* sqlUpdatePaciente = "UPDATE Paciente SET TipoSanguineo = ?, TipoDiabetes = ? WHERE Id = ?";
+            const char* sqlUpdatePaciente = "UPDATE Paciente SET TipoSanguineo = ?, TipoDiabetes = ?, Peso = ?, Altura = ? WHERE Id = ?";
             
             if (sqlite3_prepare_v2(db, sqlUpdatePaciente, -1, &stmt, nullptr) != SQLITE_OK) {
                 throw std::runtime_error(std::string("Erro ao preparar UPDATE (Paciente): ") + sqlite3_errmsg(db));
@@ -843,7 +885,9 @@ void Patient::saveToDB()
 
             sqlite3_bind_text(stmt, 1, this->bloodType.c_str(), -1, SQLITE_TRANSIENT);
             sqlite3_bind_text(stmt, 2, this->diabetesType.c_str(), -1, SQLITE_TRANSIENT);
-            sqlite3_bind_int(stmt, 3, pacienteId);
+            sqlite3_bind_double(stmt, 3, this->weight);
+            sqlite3_bind_double(stmt, 4, this->height);
+            sqlite3_bind_int(stmt, 5, pacienteId);
 
             if (sqlite3_step(stmt) != SQLITE_DONE) {
                 throw std::runtime_error(std::string("Erro ao executar UPDATE (Paciente): ") + sqlite3_errmsg(db));
@@ -856,7 +900,7 @@ void Patient::saveToDB()
             sqlite3_finalize(stmt);
             stmt = nullptr;
 
-            const char* sqlInsertPaciente = "INSERT INTO Paciente (Pessoa, TipoSanguineo, TipoDiabetes) VALUES (?, ?, ?)";
+            const char* sqlInsertPaciente = "INSERT INTO Paciente (Pessoa, TipoSanguineo, TipoDiabetes, Peso, Altura) VALUES (?, ?, ?, ?, ?)";
             
             if (sqlite3_prepare_v2(db, sqlInsertPaciente, -1, &stmt, nullptr) != SQLITE_OK) {
                 throw std::runtime_error(std::string("Erro ao preparar INSERT (Paciente): ") + sqlite3_errmsg(db));
@@ -865,6 +909,8 @@ void Patient::saveToDB()
             sqlite3_bind_int(stmt, 1, pessoaId);
             sqlite3_bind_text(stmt, 2, this->bloodType.c_str(), -1, SQLITE_TRANSIENT);
             sqlite3_bind_text(stmt, 3, this->diabetesType.c_str(), -1, SQLITE_TRANSIENT);
+            sqlite3_bind_double(stmt, 4, this->weight);
+            sqlite3_bind_double(stmt, 5, this->height);
 
             if (sqlite3_step(stmt) != SQLITE_DONE) {
                 throw std::runtime_error(std::string("Erro ao executar INSERT (Paciente): ") + sqlite3_errmsg(db));

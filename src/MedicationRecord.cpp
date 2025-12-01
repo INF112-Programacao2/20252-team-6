@@ -23,6 +23,11 @@ MedicationRecord::~MedicationRecord()
 // 2. Insere em RegistroMedicacao (tabela filha) usando o ID gerado
 void MedicationRecord::registerDB(int patientId)
 {
+    // Valida se medicamento foi salvo no banco (tem ID válido)
+    if (medication.getId() <= 0) {
+        throw std::runtime_error("Medicamento deve ser salvo no banco antes de criar registro. Execute medication.saveToDB() primeiro.");
+    }
+    
     sqlite3* db = nullptr;
     sqlite3_stmt* stmt = nullptr;
     sqlite3_stmt* stmt2 = nullptr;

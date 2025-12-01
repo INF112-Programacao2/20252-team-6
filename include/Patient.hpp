@@ -24,6 +24,11 @@ public:
   double getWeight() const;
   double getHeight() const;
   
+  void setWeight(double weight);
+  void setHeight(double height);
+
+  static bool isValidBloodType(const std::string& bloodType);
+  
   // Login no sistema - verifica CPF e senha no banco
   bool login(std::string inputCpf, std::string inputPassword);
   

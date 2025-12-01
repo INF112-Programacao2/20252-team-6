@@ -37,6 +37,9 @@ public:
   // Mostra o horário em formato 24h ou 12h
   void displayTime24() const;
   void displayTime12() const;
+  
+  // Converte Time pra string (formato HH:MM:SS)
+  std::string toString() const;
 };
 
 #endif

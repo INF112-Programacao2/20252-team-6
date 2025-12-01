@@ -33,6 +33,7 @@ public:
   virtual std::string getGender() const;
   virtual int getAge() const;
   virtual std::string getPassword() const;
+  void setAge(int age);
   
   // Imprime todas as infos da pessoa
   void printInfo() const;
