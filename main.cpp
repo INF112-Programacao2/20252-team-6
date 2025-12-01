@@ -151,11 +151,55 @@ int main(){
                 break;
             }
 
+            // Exibir Exames
             case 4: {
                 DatabaseMethods exibir;
                 exibir.displayDetailsExamRecordDB(ID);
 
                 break;
+            }
+
+            // Registrar Glicose
+            case 5: {
+                std::string data;
+                std::cout << "Qual foi a data do teste de glicose?\n";
+                std::cin.ignore();
+                std::getline(std::cin, data);
+
+                std::string hora;
+                std::cout << "Qual foi o horario do teste de glicose?\n";
+                std::getline(std::cin, hora);
+
+                int glucoselvl;
+                std::cout << "Qual foi o nivel de glicose do teste?\n";
+                std::cin >> glucoselvl;
+
+                bool jejum;
+                char jejumc;
+                while (true){
+                    std::cout << "Estava de jejum? (S/N)\n";
+                    if(std::cin >> jejumc){
+                        if(jejumc == 'S'){
+                            jejum = true;
+                            break;
+                        }
+
+                        if (jejumc == 'N'){
+                            jejum = false;
+                            break;
+                        }
+
+                        std::cout << "Digite um caractere valido!\n";
+
+                    } else {
+                        std::cout << "Digite um caractere valido!\n";
+                    }
+                }
+
+                Time horas(hora);
+                GlucoseRecord registroGlicose(*paciente_real, data, horas, glucoselvl, jejum);
+                registroGlicose.registerDB(ID);
+
             }
         }
     }
