@@ -1,4 +1,4 @@
-# SIGAP(Sistema Integrado de Gestão e Acompanhamento de Pacientes)
+# DiaryBetes
 ## Grupo 6
 ### 📘 Visão Geral
 Nosso projto tem como proposito criar um sistema onde o usuario pode acompanhar seus registros referentes a sua diabetes, como consutas, exames, dieta e seus registros de glicose.
@@ -18,6 +18,12 @@ O projeto possui a seguinte estrutura de classes:
 
 ### 📊 Banco de Dados
 O Banco de Dados foi a ferramenta usada no armazenamento de dados de objetos, foi usado o recurso de *Foreign Key* para Trabalhar com *Herança e Colaboração* dentro do Banco de Dados. A ferramenta usada foi o Sqlite3
+
+### 🛠️ Outras Ferramentas
+Foi usado:
+- Notion e Slack para gerenciamento;
+- Discord para reuniões;
+- GitHub para versionmeto de código
 
 ### 🧍 Integrantes:
 - Gabriel Costa Reis - 120549
