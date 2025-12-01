@@ -145,6 +145,7 @@ int main(){
 
                 Time horas(hora);
                 ExamRecord exame(*paciente_real, data, horas, nome, resultado, lab, doutor);
+                exame.registerDB(ID);
                 
                 break;
             }
