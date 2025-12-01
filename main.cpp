@@ -116,6 +116,39 @@ int main(){
                 break;
             }
 
+            // Registrar Exame
+            case 3: {
+                std::string doutor;
+                std::cout << "Qual o nome do medico que requisitou?\n";
+                std::cin.ignore();
+                std::getline(std::cin, doutor);
+
+                std::string nome;
+                std::cout << "Qual o nome do exame?\n";
+                std::getline(std::cin, nome);
+
+                std::string lab;
+                std::cout << "Qual o nome do laboratorio?\n";
+                std::getline(std::cin, lab);
+
+                std::string resultado;
+                std::cout << "Qual o resultado do exame?\n";
+                std::getline(std::cin, resultado);
+
+                std::string data;
+                std::cout << "Qual foi a data do exame?\n";
+                std::getline(std::cin, data);
+
+                std::string hora;
+                std::cout << "Qual foi o horario do exame? (HH:MM)\n";
+                std::getline(std::cin, hora);
+
+                Time horas(hora);
+                ExamRecord exame(*paciente_real, data, horas, nome, resultado, lab, doutor);
+                
+                break;
+            }
+
         
         }
     }
