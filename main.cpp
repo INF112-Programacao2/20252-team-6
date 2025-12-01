@@ -74,36 +74,49 @@ int main(){
 
         switch (choice){
 
-        // Marcar Consulta
-        case 1:    
-            std::string localizacao;
-            std::cout << "Deseja marcar em qual local?\n";
-            std::cin.ignore();
-            std::getline(std::cin, localizacao);
+            // Marcar Consulta
+            case 1: {
+                std::string localizacao;
+                std::cout << "Deseja marcar em qual local?\n";
+                std::cin.ignore();
+                std::getline(std::cin, localizacao);
+                
+                std::string area;
+                std::cout << "Deseja marcar com que especialista?\n";
+                std::getline(std::cin,area);
+
+                std::string nome;
+                std::cout << "Qual o nome do medico?\n";
+                std::getline(std::cin,nome);
+
+                std::string data;
+                std::cout << "Deseja marcar em que data?\n";
+                std::getline(std::cin,data);
+
+                std::string hora;
+                std::cout << "Deseja marcar que horas? (HH:MM)\n";
+                std::getline(std::cin,hora);
+
+                std::string descricao;
+                std::cout << "Adicione uma breve descricao\n";
+                std::getline(std::cin, descricao);
+
+                Time horas(hora);
+                ConsultationRecord consulta(*paciente_real, data, horas, nome, area, descricao, localizacao);
+                consulta.registerDB(ID);
+
+                break;
+            }
             
-            std::string area;
-            std::cout << "Deseja marcar com que especialista?\n";
-            std::getline(std::cin,area);
+            // Exibir Consultas
+            case 2: {
+                DatabaseMethods exibir;
+                exibir.displayDetailsConsultationRecordDB(ID);
+                
+                break;
+            }
 
-            std::string nome;
-            std::cout << "Qual o nome do medico?\n";
-            std::getline(std::cin,nome);
-
-            std::string data;
-            std::cout << "Deseja marcar em que data?\n";
-            std::getline(std::cin,data);
-
-            std::string hora;
-            std::cout << "Deseja marcar que horas? (HH:MM)\n";
-            std::getline(std::cin,hora);
-
-            std::string descricao;
-            std::cout << "Adicione uma breve descricao\n";
-            std::getline(std::cin, descricao);
-
-            Time horas(hora);
-            ConsultationRecord consulta(*paciente_real, data, horas, nome, area, descricao, localizacao);
-            consulta.registerDB(ID);
+        
         }
     }
 
