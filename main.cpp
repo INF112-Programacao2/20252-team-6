@@ -25,10 +25,11 @@ int main(){
     std::cin >> senha;
 
     // Tipo paciente para usar o metodo de verificacao de LOGIN
-    Patient paciente_temporario {"-", cpf, "-", "-", 1, senha, "-", "-", 1.0, 1.0};
+    Patient paciente_temporario {"-", cpf, "-", "-", 1, senha, "-", "A-", 1.0, 1.0};
     Patient* paciente_real = nullptr;
 
     if (paciente_temporario.login(cpf, senha)) {
+
             std::cout << "===========================\n";
             std::cout << "Credenciais Validadas. Carregando dados completos...\n";
             std::cout << "===========================\n";

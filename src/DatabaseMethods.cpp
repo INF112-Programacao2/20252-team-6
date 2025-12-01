@@ -408,7 +408,7 @@ bool isValidBloodType(const std::string& bloodType) {
 }
 
 bool isValidAge(const std::string& ageStr) {
-    std::regex age_regex("^(150|1[0-4][0-9]|[1-9][0-9]?)$");
+    std::regex age_regex("^(150|1[0-4][0-9]|[1-9][0-9]?|0)$");
     return std::regex_match(ageStr, age_regex);
 }
 
@@ -431,7 +431,7 @@ bool isValidCPF(std::string& cpfStr) {
 }
 
 bool isValidHeight(const std::string& heightStr) {
-    std::regex height_regex("^([0-9]|1\\.[0-9]{1,2}|2\\.[0-9]{1}|3\\.00?)$");
+    std::regex height_regex("^([0-9]|1\\.[0-9]{1,2}|2\\.[0-9]{1,2}|3\\.00?)$");
     return std::regex_match(heightStr, height_regex);
 }
 bool DatabaseMethods::createPatient(){
@@ -480,7 +480,7 @@ bool DatabaseMethods::createPatient(){
             std::cout << "Idade inválida! Digite entre 0 e 150 anos (ex: 25.5): ";
             std::cin >> ageInput;
         }
-        int age = std::stod(ageInput); // Converte para int
+        int age = std::stoi(ageInput); // Converte para int
 
         //validar genero
         while(gender>2||gender<1){
