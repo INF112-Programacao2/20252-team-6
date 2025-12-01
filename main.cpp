@@ -16,8 +16,29 @@ int main(){
     std::string cpf;
     std::string senha;
 
-    DatabaseMethods sign;
-    sign.createPatient();
+    while(true){
+        int escolha;
+        std::cout << "===========================\n";
+        std::cout << "Deseja fazer o que?        \n";
+        std::cout << "1) Criar uma conta         \n";
+        std::cout << "2) Login                   \n";
+        std::cout << "===========================\n";
+        
+        if(std::cin >> escolha){
+            if(escolha == 1){
+                DatabaseMethods sign;
+                sign.createPatient();
+            } else if(escolha == 2){
+                break;
+            } else {
+                std::cout << "Digite uma opcao valida!\n";
+            }
+        } else {
+            std::cout << "Digite uma opcao valida!\n";
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        }
+    }
     std::cout << "========== LOGIN ==========\n";
     std::cout << "Digite seu CPF: ";
     std::cin >> cpf;
@@ -50,7 +71,8 @@ int main(){
     
     int choice;
     // Loop principal de exibicao da tabela
-    while (true){
+    bool continuous = true;
+    while (continuous){
         // Loop para repitir ate o usario inserir um valor valido
         while (true){
             std::cout << "==============================\n";
@@ -63,7 +85,9 @@ int main(){
             std::cout << "6) Exibir registros de glicose\n";
             std::cout << "7) Registrar plano alimentar  \n";
             std::cout << "8) Mudar plano alimentar      \n";
-            std::cout << "9) Sair                       \n";
+            std::cout << "9) Exibir plano alimentar     \n";
+            std::cout << "10) Sair                      \n";
+            std::cout << "==============================\n";
             if(std::cin >> choice){
                 break;
             } else {
@@ -200,6 +224,82 @@ int main(){
                 GlucoseRecord registroGlicose(*paciente_real, data, horas, glucoselvl, jejum);
                 registroGlicose.registerDB(ID);
 
+            }
+
+            // Exibir Registros Glicose
+            case 6: {
+                DatabaseMethods exibir;
+                exibir.displayDetailsGlucoseRecordDB(ID);
+
+                break;
+            }
+
+            // Registrar Plano Alimentar
+            case 7: {
+                std::string nutricionista;
+                std::cout << "Qual o nome do nutricionista?\n";
+                std::cin.ignore();
+                std::getline(std::cin, nutricionista);
+
+                std::string alimentos;
+                std::cout << "Quais alimentos devem ser evitados?\n";
+                std::getline(std::cin, alimentos);
+
+                std::string vitaminas;
+                std::cout << "Quais vitaminas sao necessarias?\n";
+                std::getline(std::cin, vitaminas);
+
+                int proteinas;
+                while(true){
+                    std::cout << "Quanto proteina?\n";
+                    if(std::cin >> proteinas){
+                        break;
+                    } else {
+                        std::cout << "Digite um valor valido!\n";
+                        std::cin.clear();
+                        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+                    }
+                }
+
+                int carboidrato;
+                while(true){
+                    std::cout << "Quanto de carboidrato?\n";
+                    if(std::cin >> carboidrato){
+                        break;
+                    } else {
+                        std::cout << "Digite um valor valido!\n";
+                        std::cin.clear();
+                        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+                    }
+                }
+
+                int gordura;
+                while(true){
+                    std::cout << "Quanto de gordura?\n";
+                    if(std::cin >> gordura){
+                        break;
+                    } else {
+                        std::cout << "Digite um valor valido!\n";
+                        std::cin.clear();
+                        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+                    }
+                }
+
+                MealPlan plano(alimentos, nutricionista, vitaminas, proteinas, carboidrato, gordura, *paciente_real);
+                plano.register_mealPlan(ID);
+            }
+
+            case 8: {
+                MealPlan plano("-", "-", "-", 0, 0, 0, paciente_temporario);
+                plano.change_mealPlan(ID);
+            }
+
+            default : {
+                continuous = false;
+                break;
             }
         }
     }
