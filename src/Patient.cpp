@@ -11,6 +11,7 @@
 #include <string>
 #include <stdexcept>
 #include <vector>
+#include <memory>
 
 // Construtor - chama construtor de Person e adiciona validações médicas
 Patient::Patient(std::string name, std::string cpf, std::string adress,
@@ -952,7 +953,6 @@ Patient* Patient::loadFromDB(const std::string& cpf) {
     sqlite3_stmt* stmt = nullptr;
     Patient* loadedPatient = nullptr;
     
-    // Dados para o construtor Patient
     std::string name, adress, gender, password, diabetesType, bloodType;
     int age = 0;
     double weight = 0.0, height = 0.0;
@@ -964,7 +964,6 @@ Patient* Patient::loadFromDB(const std::string& cpf) {
             throw std::runtime_error(std::string("Erro ao abrir banco de dados: ") + sqlite3_errmsg(db));
         }
 
-        // Seleciona todos os dados de Pessoa e o ID
         const char* sqlPessoa = "SELECT id, Nome, Endereco, Sexo, Idade, Senha FROM Pessoa WHERE Cpf = ?";
         
         if (sqlite3_prepare_v2(db, sqlPessoa, -1, &stmt, nullptr) != SQLITE_OK) {
@@ -974,24 +973,29 @@ Patient* Patient::loadFromDB(const std::string& cpf) {
         sqlite3_bind_text(stmt, 1, cpf.c_str(), -1, SQLITE_STATIC);
 
         if (sqlite3_step(stmt) == SQLITE_ROW) {
-            // Recupera os dados da tabela Pessoa
+            
+            auto get_text = [](sqlite3_stmt* s, int col) -> std::string {
+                const unsigned char* text = sqlite3_column_text(s, col);
+                return text ? reinterpret_cast<const char*>(text) : "";
+            };
+
             pessoaId = sqlite3_column_int(stmt, 0);
-            name     = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
-            adress   = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
-            gender   = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3));
+            name     = get_text(stmt, 1);
+            adress   = get_text(stmt, 2);
+            gender   = get_text(stmt, 3);
             age      = sqlite3_column_int(stmt, 4);
-            password = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5));
+            password = get_text(stmt, 5);
+
         } else {
             std::cout << "Pessoa com CPF " << cpf << " não encontrada." << std::endl;
             sqlite3_finalize(stmt);
             sqlite3_close(db);
-            return nullptr; // Falha no carregamento
+            return nullptr;
         }
         sqlite3_finalize(stmt);
         stmt = nullptr;
 
     
-        // Agora usa o ID da Pessoa para buscar os dados médicos
         const char* sqlPaciente = "SELECT TipoDiabetes, TipoSanguineo, Peso, Altura FROM Paciente WHERE Pessoa = ?";
         
         if (sqlite3_prepare_v2(db, sqlPaciente, -1, &stmt, nullptr) != SQLITE_OK) {
@@ -1001,18 +1005,26 @@ Patient* Patient::loadFromDB(const std::string& cpf) {
         sqlite3_bind_int(stmt, 1, pessoaId);
         
         if (sqlite3_step(stmt) == SQLITE_ROW) {
-            // Recupera os dados da tabela Paciente
-            diabetesType = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
-            bloodType    = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+            
+            auto get_text = [](sqlite3_stmt* s, int col) -> std::string {
+                const unsigned char* text = sqlite3_column_text(s, col);
+                return text ? reinterpret_cast<const char*>(text) : "";
+            };
+            
+            diabetesType = get_text(stmt, 0);
+            bloodType    = get_text(stmt, 1);
             weight       = sqlite3_column_double(stmt, 2);
             height       = sqlite3_column_double(stmt, 3);
             
-            loadedPatient = new Patient(
+            std::unique_ptr<Patient> temp_patient = std::make_unique<Patient>(
                 name, cpf, adress, gender, age, password, 
                 diabetesType, bloodType, weight, height
             );
             
             std::cout << "Paciente " << name << " (ID Pessoa: " << pessoaId << ") carregado com sucesso!" << std::endl;
+            
+            loadedPatient = temp_patient.release(); 
+
         } else {
             std::cout << "O usuário (Pessoa ID: " << pessoaId << ") não está registrado como Paciente." << std::endl;
             loadedPatient = nullptr; 
@@ -1025,8 +1037,6 @@ Patient* Patient::loadFromDB(const std::string& cpf) {
         std::cerr << "Exceção ao carregar paciente: " << e.what() << std::endl;
         if (stmt) sqlite3_finalize(stmt);
         if (db) sqlite3_close(db);
-        // Garante que a memória é liberada em caso de falha
-        if (loadedPatient) delete loadedPatient; 
         return nullptr;
     } catch (...) {
         std::cerr << "Erro desconhecido ao carregar paciente." << std::endl;
