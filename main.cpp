@@ -150,7 +150,12 @@ int main(){
                 break;
             }
 
-        
+            case 4: {
+                DatabaseMethods exibir;
+                exibir.displayDetailsExamRecordDB(ID);
+
+                break;
+            }
         }
     }
 
