@@ -43,32 +43,37 @@ int main(){
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         }
     }
-    std::cout << "========== LOGIN ==========\n";
-    std::cout << "Digite seu CPF: ";
-    std::cin >> cpf;
-    std::cout << "Digite sua senha: ";
-    std::cin >> senha;
-
+        
     // Tipo paciente para usar o metodo de verificacao de LOGIN
-    Patient paciente_temporario {"-", cpf, "-", "-", 1, senha, "-", "A-", 1.0, 1.0};
+    Patient paciente_temporario {"-", "11111111111", "-", "-", 1, "-", "-", "A-", 1.0, 1.0};
     Patient* paciente_real = nullptr;
+    
+    while(true){
+        std::cout << "========== LOGIN ==========\n";
+        std::cout << "Digite seu CPF: ";
+        std::cin >> cpf;
+        std::cout << "Digite sua senha: ";
+        std::cin >> senha;
 
-    if (paciente_temporario.login(cpf, senha)) {
+        if (paciente_temporario.login(cpf, senha)) {
 
-            std::cout << "===========================\n";
-            std::cout << "Credenciais Validadas. Carregando dados completos...\n";
-            std::cout << "===========================\n";
-            
-            // Aqui carregamos o paciente REAL
-            paciente_real = Patient::loadFromDB(cpf); 
+                std::cout << "===========================\n";
+                std::cout << "Credenciais Validadas. Carregando dados completos...\n";
+                std::cout << "===========================\n";
+                
+                // Aqui carregamos o paciente REAL
+                paciente_real = Patient::loadFromDB(cpf); 
 
-            if (paciente_real == nullptr) {
-                std::cout << "Falha: O usuário não é um Paciente ou erro no DB.\n";
+                if (paciente_real == nullptr) {
+                    std::cout << "Falha: O usuário não é um Paciente ou erro no DB.\n";
+                }
+
+                break;
+                
+            } else {
+                std::cout << "\nFalha na tentativa de login.\n";
             }
-            
-        } else {
-            std::cout << "\nFalha na tentativa de login.\n";
-        }
+    }
      
     //ID do paciente logado
     int ID = paciente_real->searchId(); 
