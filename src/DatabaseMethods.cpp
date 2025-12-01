@@ -446,8 +446,8 @@ bool DatabaseMethods::createPatient(){
                 const char* insert2 = "INSERT INTO Paciente (Pessoa, Altura, Peso, TipoDiabetes, TipoSanguineo) VALUES (?,?,?,?,?)";
                 if (sqlite3_prepare_v2(db, insert2, -1, &stmt2, nullptr) == SQLITE_OK) {
                         sqlite3_bind_int(stmt2, 1, idPerson);
-                        sqlite3_bind_double(stmt, 2, weight);
-                        sqlite3_bind_double(stmt, 3, height);
+                        sqlite3_bind_double(stmt2, 2, weight);
+                        sqlite3_bind_double(stmt2, 3, height);
                         sqlite3_bind_text(stmt2, 4, dyabetesType.c_str(), -1, SQLITE_TRANSIENT);
                         sqlite3_bind_text(stmt2, 5, bloodType.c_str(), -1, SQLITE_TRANSIENT);
                     if (sqlite3_step(stmt2) == SQLITE_DONE) {

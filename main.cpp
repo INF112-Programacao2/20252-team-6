@@ -16,6 +16,8 @@ int main(){
     std::string cpf;
     std::string senha;
 
+    DatabaseMethods sign;
+    sign.createPatient();
     std::cout << "========== LOGIN ==========\n";
     std::cout << "Digite seu CPF: ";
     std::cin >> cpf;
