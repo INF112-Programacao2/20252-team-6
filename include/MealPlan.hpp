@@ -14,7 +14,6 @@ class MealPlan{
     int fat;
     const Patient& patient;
     public:
-    MealPlan(const Patient& patient, int id);
     MealPlan(std::string foodAvoided, std::string nutricionist, std::string vitamins,
     int protein, int carbohydrate, int fat, const Patient& patient);
     ~MealPlan();
