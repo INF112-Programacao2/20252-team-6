@@ -124,7 +124,6 @@ void Medication::setDosage(double dosage)
 }
 
 // Salva o medicamento no banco de dados
-// Usa prepared statements pra evitar SQL injection
 void Medication::saveToDB()
 {
     sqlite3* db = nullptr;
@@ -143,35 +142,91 @@ void Medication::saveToDB()
                 << std::setfill('0') << std::setw(2) << timeMedication.getMinute() << ":"
                 << std::setfill('0') << std::setw(2) << timeMedication.getSecond();
         
-        // SQL com prepared statement (seguro)
-        const char* sql = "INSERT INTO Medicacao (Paciente, Nome, Horario, Dosagem, Medico) VALUES (?, ?, ?, ?, ?)";
+        // Verificar se a medicação já existe
+        const char* sqlCheck = nullptr;
+        if (this->id > 0) {
+            // Medicação já foi salva antes - verifica por ID
+            sqlCheck = "SELECT Id FROM Medicacao WHERE Id = ?";
+        } else {
+            // Medicação nova - verifica por Paciente + Nome + Horario
+            sqlCheck = "SELECT Id FROM Medicacao WHERE Paciente = ? AND Nome = ? AND Horario = ?";
+        }
         
-        if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
-            throw std::runtime_error(std::string("Erro ao preparar consulta: ") + sqlite3_errmsg(db));
+        if (sqlite3_prepare_v2(db, sqlCheck, -1, &stmt, nullptr) != SQLITE_OK) {
+            throw std::runtime_error(std::string("Erro ao preparar consulta (verificar Medicacao): ") + sqlite3_errmsg(db));
         }
 
-        // Bind dos parâmetros
-        sqlite3_bind_int(stmt, 1, patientId);
-        sqlite3_bind_text(stmt, 2, name.c_str(), -1, SQLITE_TRANSIENT);
-        sqlite3_bind_text(stmt, 3, timeStr.str().c_str(), -1, SQLITE_TRANSIENT);
-        sqlite3_bind_double(stmt, 4, dosage);
-        sqlite3_bind_text(stmt, 5, doctor.c_str(), -1, SQLITE_TRANSIENT);
+        if (this->id > 0) {
+            sqlite3_bind_int(stmt, 1, this->id);
+        } else {
+            sqlite3_bind_int(stmt, 1, patientId);
+            sqlite3_bind_text(stmt, 2, name.c_str(), -1, SQLITE_TRANSIENT);
+            sqlite3_bind_text(stmt, 3, timeStr.str().c_str(), -1, SQLITE_TRANSIENT);
+        }
+        
+        if (sqlite3_step(stmt) == SQLITE_ROW) {
+            // Medicação já existe - pega o ID e atualiza
+            int medicacaoId = sqlite3_column_int(stmt, 0);
+            sqlite3_finalize(stmt);
+            stmt = nullptr;
 
-        // Executa a inserção
-        if (sqlite3_step(stmt) != SQLITE_DONE) {
-            throw std::runtime_error(std::string("Erro ao executar inserção: ") + sqlite3_errmsg(db));
+            // UPDATE na tabela Medicacao
+            const char* sqlUpdate = "UPDATE Medicacao SET Dosagem = ?, Medico = ? WHERE Id = ?";
+            
+            if (sqlite3_prepare_v2(db, sqlUpdate, -1, &stmt, nullptr) != SQLITE_OK) {
+                throw std::runtime_error(std::string("Erro ao preparar UPDATE (Medicacao): ") + sqlite3_errmsg(db));
+            }
+
+            sqlite3_bind_double(stmt, 1, dosage);
+            sqlite3_bind_text(stmt, 2, doctor.c_str(), -1, SQLITE_TRANSIENT);
+            sqlite3_bind_int(stmt, 3, medicacaoId);
+
+            if (sqlite3_step(stmt) != SQLITE_DONE) {
+                throw std::runtime_error(std::string("Erro ao executar UPDATE (Medicacao): ") + sqlite3_errmsg(db));
+            }
+
+            // Atualiza o ID do objeto se ainda não estava setado
+            if (this->id <= 0) {
+                this->id = medicacaoId;
+            }
+
+            std::cout << "Medicamento atualizado. ID: " << medicacaoId << std::endl;
+            sqlite3_finalize(stmt);
+            stmt = nullptr;
+        } else {
+            // Medicação não existe - insere nova
+            sqlite3_finalize(stmt);
+            stmt = nullptr;
+
+            const char* sqlInsert = "INSERT INTO Medicacao (Paciente, Nome, Horario, Dosagem, Medico) VALUES (?, ?, ?, ?, ?)";
+            
+            if (sqlite3_prepare_v2(db, sqlInsert, -1, &stmt, nullptr) != SQLITE_OK) {
+                throw std::runtime_error(std::string("Erro ao preparar INSERT (Medicacao): ") + sqlite3_errmsg(db));
+            }
+
+            sqlite3_bind_int(stmt, 1, patientId);
+            sqlite3_bind_text(stmt, 2, name.c_str(), -1, SQLITE_TRANSIENT);
+            sqlite3_bind_text(stmt, 3, timeStr.str().c_str(), -1, SQLITE_TRANSIENT);
+            sqlite3_bind_double(stmt, 4, dosage);
+            sqlite3_bind_text(stmt, 5, doctor.c_str(), -1, SQLITE_TRANSIENT);
+
+            // Executa a inserção
+            if (sqlite3_step(stmt) != SQLITE_DONE) {
+                throw std::runtime_error(std::string("Erro ao executar INSERT (Medicacao): ") + sqlite3_errmsg(db));
+            }
+
+            // Pega o ID gerado pelo banco e atualiza o objeto
+            this->id = static_cast<int>(sqlite3_last_insert_rowid(db));
+            
+            std::cout << "Novo medicamento inserido. ID: " << this->id << std::endl;
+            sqlite3_finalize(stmt);
+            stmt = nullptr;
         }
 
-        // Pega o ID gerado pelo banco e atualiza o objeto
-        this->id = static_cast<int>(sqlite3_last_insert_rowid(db));
-        
-        std::cout << "Medicamento registrado com sucesso! ID: " << this->id << std::endl;
-        
-        sqlite3_finalize(stmt);
         sqlite3_close(db);
+        std::cout << "Medicamento salvo no banco de dados com sucesso!" << std::endl;
 
     } catch (const std::exception& e) {
-        // Tratamento de exceções - sempre limpa recursos
         std::cerr << "Exceção capturada em saveToDB: " << e.what() << std::endl;
         if (stmt) {
             sqlite3_finalize(stmt);
@@ -181,7 +236,6 @@ void Medication::saveToDB()
         }
         throw;
     } catch (...) {
-        // Catch genérico pra erros não esperados
         std::cerr << "Erro desconhecido ao salvar medicamento." << std::endl;
         if (stmt) {
             sqlite3_finalize(stmt);
