@@ -12,10 +12,10 @@ private:
   unsigned short int minute;    // Minuto (0-59)
   unsigned short int second;    // Segundo (0-59)
   
+public:
+
   // Método estático pra validar se os valores são válidos
   static bool isValid(int hour, int minute, int second);
-  
-public:
 
   // Metodo para verificar formato
   bool isStringValid( const std::string& string); 

@@ -2,6 +2,7 @@
 #include <sqlite3.h>
 #include <limits>
 #include <string>
+#include <memory>
 #include "include/MealPlan.hpp"
 #include "include/Patient.hpp"
 #include "include/Person.hpp"
@@ -128,23 +129,30 @@ int main(){
                 std::getline(std::cin,data);
 
                 std::string hora;
+                std::unique_ptr<Time> horas = nullptr;
                 while(true){
-                    std::cout << "Deseja marcar que horas? (HH:MM)\n";
-                    std::getline(std::cin,hora);
-                    Time Verificacao(1,1,1);
-                    if(Verificacao.isStringValid(hora)){
-                        break;
-                    } else {
-                        std::cout << "Digite um formato valido! (HH:MM)\n";
+                    while(true){
+                        std::cout << "Deseja marcar que horas? (HH:MM)\n";
+                        std::getline(std::cin,hora);
+                        Time Verificacao(1,1,1);
+                        if(Verificacao.isStringValid(hora)){
+                            break;
+                        } else {
+                            std::cout << "Digite um formato valido! (HH:MM)\n";
+                        }
                     }
+                    horas = std::make_unique<Time>(hora);
+                    if((horas->getHour() >= 0 && horas->getHour() < 24) && (horas->getMinute() >= 0 && horas->getMinute() < 60) && (horas->getSecond() >= 0 && horas->getSecond() < 60)){
+                        break;
+                    }
+                    std::cout << "Digite um horario valido!\n";
                 }
 
                 std::string descricao;
                 std::cout << "Adicione uma breve descricao\n";
                 std::getline(std::cin, descricao);
 
-                Time horas(hora);
-                ConsultationRecord consulta(*paciente_real, data, horas, nome, area, descricao, localizacao);
+                ConsultationRecord consulta(*paciente_real, data, *horas, nome, area, descricao, localizacao);
                 consulta.registerDB(ID);
 
                 break;
@@ -182,19 +190,26 @@ int main(){
                 std::getline(std::cin, data);
 
                 std::string hora;
+                std::unique_ptr<Time> horas = nullptr;
                 while(true){
-                    std::cout << "Qual foi o horario do exame? (HH:MM)\n";
-                    std::getline(std::cin, hora);
-                    Time Verificacao(1,1,1);
-                    if(Verificacao.isStringValid(hora)){
-                        break;
-                    } else {
-                        std::cout << "Digite um formato valido! (HH:MM)\n";
+                    while(true){
+                        std::cout << "Qual foi o horario do exame? (HH:MM)\n";
+                        std::getline(std::cin, hora);
+                        Time Verificacao(1,1,1);
+                        if(Verificacao.isStringValid(hora)){
+                            break;
+                        } else {
+                            std::cout << "Digite um formato valido! (HH:MM)\n";
+                        }
                     }
+                    horas = std::make_unique<Time>(hora);
+                    if((horas->getHour() >= 0 && horas->getHour() < 24) && (horas->getMinute() >= 0 && horas->getMinute() < 60) && (horas->getSecond() >= 0 && horas->getSecond() < 60)){
+                        break;
+                    }
+                    std::cout << "Digite um horario valido!\n";
                 }
 
-                Time horas(hora);
-                ExamRecord exame(*paciente_real, data, horas, nome, resultado, lab, doutor);
+                ExamRecord exame(*paciente_real, data, *horas, nome, resultado, lab, doutor);
                 exame.registerDB(ID);
                 
                 break;
@@ -216,15 +231,23 @@ int main(){
                 std::getline(std::cin, data);
 
                 std::string hora;
+                std::unique_ptr<Time> horas;
                 while(true){
-                    std::cout << "Qual foi o horario do teste de glicose?\n";
-                    std::getline(std::cin, hora);
-                    Time Verificacao(1,1,1);
-                    if(Verificacao.isStringValid(hora)){
-                        break;
-                    } else {
-                        std::cout << "Digite um formato valido! (HH:MM)\n";
+                    while(true){
+                        std::cout << "Qual foi o horario do teste de glicose?\n";
+                        std::getline(std::cin, hora);
+                        Time Verificacao(1,1,1);
+                        if(Verificacao.isStringValid(hora)){
+                            break;
+                        } else {
+                            std::cout << "Digite um formato valido! (HH:MM)\n";
+                        }
                     }
+                    horas = std::make_unique<Time>(hora);
+                    if((horas->getHour() >= 0 && horas->getHour() < 24) && (horas->getMinute() >= 0 && horas->getMinute() < 60) && (horas->getSecond() >= 0 && horas->getSecond() < 60)){
+                        break;
+                    }
+                    std::cout << "Digite um horario valido!\n";
                 }
 
                 int glucoselvl;
@@ -253,8 +276,7 @@ int main(){
                     }
                 }
 
-                Time horas(hora);
-                GlucoseRecord registroGlicose(*paciente_real, data, horas, glucoselvl, jejum);
+                GlucoseRecord registroGlicose(*paciente_real, data, *horas, glucoselvl, jejum);
                 registroGlicose.registerDB(ID);
 
             }

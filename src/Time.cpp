@@ -47,9 +47,9 @@ Time::Time(const std::string& timeStr)
   }
   
   // Valida e atribui usando o método isValid
-  if (!isValid(h, m, s)) {
-    throw std::invalid_argument("Valores de tempo inválidos.");
-  }
+  //if (!isValid(h, m, s)) {
+    //throw std::invalid_argument("Valores de tempo inválidos.");
+  //}
   
   this->hour = h;
   this->minute = m;
