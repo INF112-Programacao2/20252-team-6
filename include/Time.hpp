@@ -14,8 +14,12 @@ private:
   
   // Método estático pra validar se os valores são válidos
   static bool isValid(int hour, int minute, int second);
-
+  
 public:
+
+  // Metodo para verificar formato
+  bool isStringValid( const std::string& string); 
+
   // Construtor - valida e lança exceção se inválido
   Time(int hour, int minute, int second);
   

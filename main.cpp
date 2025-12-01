@@ -10,6 +10,7 @@
 #include "include/ConsultationRecord.hpp"
 #include "include/GlucoseRecord.hpp"
 #include "include/DatabaseMethods.hpp"
+#include "include/Time.hpp"
 
 int main(){
     
@@ -22,6 +23,7 @@ int main(){
         std::cout << "Deseja fazer o que?        \n";
         std::cout << "1) Criar uma conta         \n";
         std::cout << "2) Login                   \n";
+        std::cout << "3) Sair                    \n";
         std::cout << "===========================\n";
         
         if(std::cin >> escolha){
@@ -30,6 +32,8 @@ int main(){
                 sign.createPatient();
             } else if(escolha == 2){
                 break;
+            } else if(escolha == 3){
+                return 0;
             } else {
                 std::cout << "Digite uma opcao valida!\n";
             }
@@ -119,8 +123,16 @@ int main(){
                 std::getline(std::cin,data);
 
                 std::string hora;
-                std::cout << "Deseja marcar que horas? (HH:MM)\n";
-                std::getline(std::cin,hora);
+                while(true){
+                    std::cout << "Deseja marcar que horas? (HH:MM)\n";
+                    std::getline(std::cin,hora);
+                    Time Verificacao(1,1,1);
+                    if(Verificacao.isStringValid(hora)){
+                        break;
+                    } else {
+                        std::cout << "Digite um formato valido! (HH:MM)\n";
+                    }
+                }
 
                 std::string descricao;
                 std::cout << "Adicione uma breve descricao\n";
@@ -165,8 +177,16 @@ int main(){
                 std::getline(std::cin, data);
 
                 std::string hora;
-                std::cout << "Qual foi o horario do exame? (HH:MM)\n";
-                std::getline(std::cin, hora);
+                while(true){
+                    std::cout << "Qual foi o horario do exame? (HH:MM)\n";
+                    std::getline(std::cin, hora);
+                    Time Verificacao(1,1,1);
+                    if(Verificacao.isStringValid(hora)){
+                        break;
+                    } else {
+                        std::cout << "Digite um formato valido! (HH:MM)\n";
+                    }
+                }
 
                 Time horas(hora);
                 ExamRecord exame(*paciente_real, data, horas, nome, resultado, lab, doutor);
@@ -191,8 +211,16 @@ int main(){
                 std::getline(std::cin, data);
 
                 std::string hora;
-                std::cout << "Qual foi o horario do teste de glicose?\n";
-                std::getline(std::cin, hora);
+                while(true){
+                    std::cout << "Qual foi o horario do teste de glicose?\n";
+                    std::getline(std::cin, hora);
+                    Time Verificacao(1,1,1);
+                    if(Verificacao.isStringValid(hora)){
+                        break;
+                    } else {
+                        std::cout << "Digite um formato valido! (HH:MM)\n";
+                    }
+                }
 
                 int glucoselvl;
                 std::cout << "Qual foi o nivel de glicose do teste?\n";
@@ -297,17 +325,19 @@ int main(){
                 plano.change_mealPlan(ID);
             }
 
-            default : {
+            case 10 : {
                 continuous = false;
+                break;
+            }
+            
+            default : {
+                std::cout << "Digite uma opcao valida!\n";
                 break;
             }
         }
     }
 
         
-    
-    
-    
     if (paciente_real != nullptr)
         delete paciente_real;
 

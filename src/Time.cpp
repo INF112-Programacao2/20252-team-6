@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <sstream>
 #include <iomanip>
+#include <algorithm>
 
 // Construtor - valida os valores antes de criar
 Time::Time(int hour, int minute, int second)
@@ -99,6 +100,54 @@ void Time::setSecond(int second)
     throw std::invalid_argument("Segundo inválido. Deve estar entre 0 e 59.");
   }
   this->second = second;
+}
+
+// Funcao auxiliar para isStringValid
+bool isSegmentNumeric(const std::string& str) {
+    if (str.empty()) {
+        return false;
+    }
+    return std::all_of(str.begin(), str.end(), ::isdigit);
+}
+
+// Verfica se a string esta no formato HH:MM ou HH:MM:SS
+bool Time::isStringValid(const std::string& timeStr){
+   
+  std::istringstream iss(timeStr);
+  std::string token;
+  int count = 0; 
+
+  // --- 1. Ler e validar a Hora (HH) ---
+  if (!std::getline(iss, token, ':') || !isSegmentNumeric(token)) {
+      return false; 
+  }
+  count++;
+
+  // --- 2. Ler e validar o Minuto (MM) ---
+  if (!std::getline(iss, token, ':') || !isSegmentNumeric(token)) {
+      return false; 
+  }
+  count++;
+
+  // --- 3. Tentar ler e validar o Segundo (SS) ---
+  if (std::getline(iss, token, ':')) {
+      if (!isSegmentNumeric(token)) {
+          return false;
+      }
+        
+      // Verifica se há lixo após o SS
+      std::string extra;
+      if (std::getline(iss, extra)) {
+          return false;
+      }
+      count++;
+  }
+
+  if (count < 2) {
+      return false;
+  }
+
+  return true;
 }
 
 // Mostra horário em formato 12h (AM/PM)
