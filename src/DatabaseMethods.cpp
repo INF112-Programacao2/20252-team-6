@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <string>
 #include <sqlite3.h>
+#include <regex>
 #include "../include/DatabaseMethods.hpp"
 
 DatabaseMethods::DatabaseMethods(){}
@@ -371,6 +372,68 @@ void DatabaseMethods::displayDetailsMedicationRecordDB(int id){
     }
 }
 
+bool isValidName(const std::string& name) {
+    std::regex name_regex("^[a-zA-ZÀ-ÿ\\s]+$");
+    return std::regex_match(name, name_regex);
+}
+
+
+bool isValidWeight(const std::string& weightStr) {
+    std::regex decimal_regex("^[0-9]+(\\.[0-9]+)?$");
+    
+    if (!std::regex_match(weightStr, decimal_regex)) {
+        std::cout << "Peso deve ser um número válido.\n";
+        return false;
+    }
+    
+    // Converte e verifica faixa
+    double weight = std::stod(weightStr);
+    if (weight < 1.0 || weight > 300.0) {
+        std::cout << "Peso deve estar entre 1kg e 300kg.\n";
+        return false;
+    }
+    
+    return true;
+}
+
+bool isValidBloodType(const std::string& bloodType) {
+    const std::vector<std::string> validTypes = {
+        "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"
+    };
+
+    std::string upper = bloodType;
+    std::transform(upper.begin(), upper.end(), upper.begin(), ::toupper);
+
+    return std::find(validTypes.begin(), validTypes.end(), upper) != validTypes.end();
+}
+
+bool isValidAge(const std::string& ageStr) {
+    std::regex age_regex("^(150|1[0-4][0-9]|[1-9][0-9]?)$");
+    return std::regex_match(ageStr, age_regex);
+}
+
+bool isValidCPF(std::string& cpfStr) {
+    //remove caracteres nao numericos
+    std::string cleanCPF;
+    for (char c : cpfStr){
+        if (std::isdigit(c)) {
+            cleanCPF += c;
+        }
+    }
+    
+    //verifica se tem 11 digitos
+    if (cleanCPF.length() != 11) {
+        std::cout << "CPF deve ter 11 dígitos.\n";
+        return false;
+    }
+    cpfStr = cleanCPF;
+    return true;
+}
+
+bool isValidHeight(const std::string& heightStr) {
+    std::regex height_regex("^([0-9]|1\\.[0-9]{1,2}|2\\.[0-9]{1}|3\\.00?)$");
+    return std::regex_match(heightStr, height_regex);
+}
 bool DatabaseMethods::createPatient(){
     sqlite3* db;
     sqlite3_stmt* stmt;
@@ -384,19 +447,42 @@ bool DatabaseMethods::createPatient(){
         }
         //pedir dados para criar paciente
         std::string name, cpf, password = "1", passwordOK = "0", adress, bloodType, dyabetesType;
-        double height, weight;
-        int age, gender=3;
+        int gender=3;
 
         std::cout << "\nDigite seu nome: ";
         std::cin.ignore(); 
         std::getline(std::cin, name);
-        std::cout << "\nColeta de dados necessaria para fins de necessidade do programa!\nDigite seu cpf: ";
+
+        // Validar o nome
+        while (!isValidName(name)) {
+            std::cout << "Nome inválido! Use apenas letras e espaços.\n";
+            std::cout << "Digite seu nome novamente: ";
+            std::getline(std::cin, name);
+        }
+
+        //Validar cpf
+        std::cout << "\nColeta de dados necessaria para fins do programa!\nDigite seu cpf: ";
         std::cin >> cpf;
+        while (!isValidCPF(cpf)) {
+            std::cout << "Digite seu CPF novamente: ";
+            std::cin >> cpf;
+        }
+
         std::cout << "\nDigite seu endereço: ";
         std::cin.ignore(); 
         std::getline(std::cin, adress);
-        std::cout << "\nDigite sua idade: ";
-        std::cin >> age;
+
+        //validar idade
+        std::string ageInput;
+        std::cout << "Digite sua idade: ";
+        std::cin >> ageInput;
+        while (!isValidAge(ageInput)) {
+            std::cout << "Idade inválida! Digite entre 0 e 150 anos (ex: 25.5): ";
+            std::cin >> ageInput;
+        }
+        int age = std::stod(ageInput); // Converte para int
+
+        //validar genero
         while(gender>2||gender<1){
             std::cout << "\nQual seu genero?(1 p/ masculino e 2 p/ feminino):";
             std::cin >> gender;
@@ -404,15 +490,41 @@ bool DatabaseMethods::createPatient(){
                 std::cout<<"\nOpcao invalida, digite novamente";
             }
         }
+
+        //validar tipo sanguineo
         std::cout << "\nDigite seu tipo sanguineo: ";
         std::cin >> bloodType;
+        while(!isValidBloodType(bloodType)){
+            std::cout << "\nOpcao invalida, digite novamente: ";
+            std::cin >> bloodType;
+        }
+
         std::cout << "\nDigite seu tipo de diabetes: ";
         std::cin.ignore(); 
         std::getline(std::cin, dyabetesType);
-        std::cout << "\nDigite seu peso em Kg: ";
-        std::cin >> weight;
-        std::cout << "\nDigite sua altura em metros: ";
-        std::cin >> height;
+
+        //validar peso
+        std::string weightInput;
+        std::cout << "Digite seu peso em Kg: ";
+        std::cin >> weightInput;
+        while (!isValidWeight(weightInput)) {
+            std::cout << "Peso inválido! Digite entre 1kg e 300kg (ex: 65.5): ";
+            std::cin >> weightInput;
+        }
+        double weight = std::stod(weightInput);
+
+        //validar altura
+        std::string heightInput;
+        std::cout << "Digite sua altura em metros: ";
+        std::cin >> heightInput;
+        while (!isValidHeight(heightInput)) {
+            std::cout << "Altura inválido! Digite entre 0 e 3 metros (ex: 1.75): ";
+            std::cin >> heightInput;
+        }
+        double height = std::stod(heightInput);
+
+
+        //validar senha
         while(password!=passwordOK){
             std::cout << "\nDigite sua senha: ";
             std::cin >> password;
@@ -421,6 +533,8 @@ bool DatabaseMethods::createPatient(){
             if(password!=passwordOK)
                 std::cout << "\nSenhas difentes, digite novamente!";
         }
+
+        //transformas genero em string
         std::string genderStr;
         if(gender==1)
             genderStr = "Masculino";

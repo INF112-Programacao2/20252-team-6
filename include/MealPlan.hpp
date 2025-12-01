@@ -1,5 +1,5 @@
 #ifndef MEALPLAN_HPP
-#define MEALPLAN
+#define MEALPLAN_HPP
 #include<string>
 #include"Patient.hpp"
 #include<sqlite3.h>
