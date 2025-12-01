@@ -831,7 +831,7 @@ void Patient::saveToDB()
                 throw std::runtime_error(std::string("Erro ao executar UPDATE (Pessoa): ") + sqlite3_errmsg(db));
             }
 
-            std::cout << "Dados da pessoa atualizados. ID: " << pessoaId << std::endl;
+            std::cout << "Dados da pessoa atualizados. ID: " << pessoaId << std::endl;z
             sqlite3_finalize(stmt);
             stmt = nullptr;
         } else {

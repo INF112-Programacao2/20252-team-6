@@ -6,9 +6,9 @@
 #include <sqlite3.h>
 
 // Construtor pra novo medicamento (id = -1, será gerado quando salvar no banco)
-Medication::Medication(int patientId, std::string name, std::string activeIngredient, Time timeMedication,
+Medication::Medication(int patientId, std::string name, Time timeMedication,
                        double dosage, std::string doctor) 
-    : id(-1), patientId(patientId), name(name), activeIngredient(activeIngredient),
+    : id(-1), patientId(patientId), name(name),
       timeMedication(timeMedication), dosage(dosage), doctor(doctor)
 {
     // Validações dos dados
@@ -17,9 +17,6 @@ Medication::Medication(int patientId, std::string name, std::string activeIngred
     }
     if (name.empty()) {
         throw std::invalid_argument("Nome do medicamento não pode ser vazio.");
-    }
-    if (activeIngredient.empty()) {
-        throw std::invalid_argument("Princípio ativo não pode ser vazio.");
     }
     if (dosage <= 0) {
         throw std::invalid_argument("Dosagem deve ser maior que zero.");
@@ -33,9 +30,9 @@ Medication::Medication(int patientId, std::string name, std::string activeIngred
 }
 
 // Construtor pra carregar medicamento do banco (já tem id)
-Medication::Medication(int id, int patientId, std::string name, std::string activeIngredient, Time timeMedication,
+Medication::Medication(int id, int patientId, std::string name, Time timeMedication,
                        double dosage, std::string doctor) 
-    : id(id), patientId(patientId), name(name), activeIngredient(activeIngredient),
+    : id(id), patientId(patientId), name(name),
       timeMedication(timeMedication), dosage(dosage), doctor(doctor)
 {
     // Validações (incluindo o id agora)
@@ -47,9 +44,6 @@ Medication::Medication(int id, int patientId, std::string name, std::string acti
     }
     if (name.empty()) {
         throw std::invalid_argument("Nome do medicamento não pode ser vazio.");
-    }
-    if (activeIngredient.empty()) {
-        throw std::invalid_argument("Princípio ativo não pode ser vazio.");
     }
     if (dosage <= 0) {
         throw std::invalid_argument("Dosagem deve ser maior que zero.");
@@ -68,7 +62,6 @@ Medication::~Medication(){}
 void Medication::printInfo() const
 {
   std::cout << "Nome: " << this->name << "\n";
-  std::cout << "Principio Ativo: " << this->activeIngredient << "\n";
   std::cout << "Intervalo: ";
   this->timeMedication.displayTime24();
   std::cout << "Dosagem: " << this->dosage << "\n";
@@ -79,11 +72,6 @@ void Medication::printInfo() const
 std::string Medication::getName() const
 {
   return this->name;
-}
-
-std::string Medication::getActiveIngredient() const
-{
-  return this->activeIngredient;
 }
 
 double Medication::getDosage() const
