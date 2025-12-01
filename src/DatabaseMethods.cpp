@@ -372,13 +372,13 @@ void DatabaseMethods::displayDetailsMedicationRecordDB(int id){
     }
 }
 
-bool isValidName(const std::string& name) {
+bool DatabaseMethods::isValidName(const std::string& name) {
     std::regex name_regex("^[a-zA-ZÀ-ÿ\\s]+$");
     return std::regex_match(name, name_regex);
 }
 
 
-bool isValidWeight(const std::string& weightStr) {
+bool DatabaseMethods::isValidWeight(const std::string& weightStr) {
     std::regex decimal_regex("^[0-9]+(\\.[0-9]+)?$");
     
     if (!std::regex_match(weightStr, decimal_regex)) {
@@ -396,7 +396,7 @@ bool isValidWeight(const std::string& weightStr) {
     return true;
 }
 
-bool isValidBloodType(const std::string& bloodType) {
+bool DatabaseMethods::isValidBloodType(const std::string& bloodType) {
     const std::vector<std::string> validTypes = {
         "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"
     };
@@ -407,18 +407,87 @@ bool isValidBloodType(const std::string& bloodType) {
     return std::find(validTypes.begin(), validTypes.end(), upper) != validTypes.end();
 }
 
-bool isValidAge(const std::string& ageStr) {
-    std::regex age_regex("^(150|1[0-4][0-9]|[1-9][0-9]?|0)$");
-    return std::regex_match(ageStr, age_regex);
+bool DatabaseMethods::isValidAge(const std::string& ageStr) {
+    // Verifica se contém apenas dígitos
+    for (char c : ageStr) {
+        if (!std::isdigit(c)) {
+            std::cout << "Idade deve conter apenas números.\n";
+            return false;
+        }
+    }
+    
+    try {
+        int age = std::stoi(ageStr);
+        
+        if (age < 0) {
+            std::cout << "Idade nao pode ser negativa.\n";
+            return false;
+        }
+        
+        if (age > 150) {
+            std::cout << "Idade nao pode ser maior que 150 anos.\n";
+            return false;
+        }
+        
+        if (age == 0) {
+            std::cout << "Aviso: idade 0 registrada (recem-nascido).\n";
+        }
+        
+        return true;
+        
+    } catch (const std::exception& e) {
+        std::cout << "Idade invalida.\n";
+        return false;
+    }
 }
 
-bool isValidCPF(std::string& cpfStr) {
+bool DatabaseMethods::isValidCPF(std::string& cpfStr) {
     //remove caracteres nao numericos
     std::string cleanCPF;
     for (char c : cpfStr){
         if (std::isdigit(c)) {
             cleanCPF += c;
         }
+    }
+
+    //verificar se o cpf ja existe no banco
+    sqlite3* db;
+    sqlite3_stmt* stmt;
+    
+    try {
+        int rc = sqlite3_open("database.db", &db);
+        if (rc != SQLITE_OK) {
+            std::cerr << "Erro ao abrir database: " << sqlite3_errmsg(db) << std::endl;
+            return false;
+        }
+        const char* select = "SELECT Id FROM Pessoa WHERE Cpf = ?";
+
+        rc = sqlite3_prepare_v2(db, select, -1, &stmt, nullptr);
+        if (rc != SQLITE_OK) {
+            std::cerr << "Erro ao preparar consulta: " << sqlite3_errmsg(db) << std::endl;
+            sqlite3_finalize(stmt);
+            sqlite3_close(db);
+            return false;
+        }
+        //vincula o parametro
+        sqlite3_bind_text(stmt, 1, cleanCPF.c_str(), -1, SQLITE_TRANSIENT);
+        
+        // Executar consulta
+        rc = sqlite3_step(stmt);
+        if (rc == SQLITE_ROW) {
+            //CPF encontrado no banco
+            std::cout << "CPF ja cadastrado no sistema.\n";
+            sqlite3_finalize(stmt);
+            sqlite3_close(db);
+            return false;
+        }
+        
+        sqlite3_finalize(stmt);
+        sqlite3_close(db);
+    }
+    catch(const std::exception& e) {
+        std::cerr << "Exceção: " << e.what() << std::endl;
+        return false;
     }
     
     //verifica se tem 11 digitos
@@ -430,10 +499,11 @@ bool isValidCPF(std::string& cpfStr) {
     return true;
 }
 
-bool isValidHeight(const std::string& heightStr) {
-    std::regex height_regex("^([0-9]|1\\.[0-9]{1,2}|2\\.[0-9]{1,2}|3\\.00?)$");
+bool DatabaseMethods::isValidHeight(const std::string& heightStr) {
+    std::regex height_regex("^(0\\.[5-9][0-9]?|1\\.[0-9]{1,2}|2\\.[0-9]{1,2}|3\\.00?)$");
     return std::regex_match(heightStr, height_regex);
 }
+
 bool DatabaseMethods::createPatient(){
     sqlite3* db;
     sqlite3_stmt* stmt;
@@ -474,10 +544,10 @@ bool DatabaseMethods::createPatient(){
 
         //validar idade
         std::string ageInput;
-        std::cout << "Digite sua idade: ";
+        std::cout << "Digite sua idade(Inteiro): ";
         std::cin >> ageInput;
         while (!isValidAge(ageInput)) {
-            std::cout << "Idade inválida! Digite entre 0 e 150 anos (ex: 25.5): ";
+            std::cout << "Idade inválida! Digite entre 0 e 150 anos (ex: 25): ";
             std::cin >> ageInput;
         }
         int age = std::stoi(ageInput); // Converte para int
@@ -518,7 +588,7 @@ bool DatabaseMethods::createPatient(){
         std::cout << "Digite sua altura em metros: ";
         std::cin >> heightInput;
         while (!isValidHeight(heightInput)) {
-            std::cout << "Altura inválido! Digite entre 0 e 3 metros (ex: 1.75): ";
+            std::cout << "Altura inválido! Digite entre 0.50 e 3 metros (ex: 1.75): ";
             std::cin >> heightInput;
         }
         double height = std::stod(heightInput);
