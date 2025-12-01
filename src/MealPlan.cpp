@@ -8,6 +8,10 @@ int protein, int carbohydrate, int fat, const Patient& patient)
 : foodAvoided(foodAvoided), nutricionist(nutricionist), vitamins(vitamins), protein(protein),
 carbohydrate(carbohydrate), fat(fat), patient(patient){}
 
+MealPlan::MealPlan(const Patient& patient)
+    :foodAvoided(""), nutricionist(""), vitamins(""), protein(0),
+carbohydrate(0), fat(0), patient(patient){}
+
 MealPlan::~MealPlan(){}
 
 void MealPlan::register_mealPlan(int id){
@@ -251,4 +255,77 @@ bool MealPlan::change_mealPlan(int id) {
     
     sqlite3_close(db);
     return true;
+}
+
+void MealPlan::load_mealPlan(int id){
+        sqlite3* db;
+    sqlite3_stmt* stmt;
+    
+    try {
+        int rc = sqlite3_open("database.db", &db);
+        if (rc != SQLITE_OK) {
+            std::cerr << "Erro ao abrir database: " << sqlite3_errmsg(db) << std::endl;
+            return;
+        }
+
+        const char* query = 
+            "SELECT Nutricionista, AlimentosEvitados, Carboidrato, Proteinas, Gordura, Vitaminas "
+            "FROM PlanoAlimentar WHERE Paciente = ?";
+            
+        rc = sqlite3_prepare_v2(db, query, -1, &stmt, nullptr);
+        if (rc != SQLITE_OK) {
+            std::cerr << "Erro ao preparar consulta: " << sqlite3_errmsg(db) << std::endl;
+            sqlite3_close(db);
+            return;
+        }
+        
+        sqlite3_bind_int(stmt, 1, id);
+        
+        rc = sqlite3_step(stmt);
+        //verificação se não é null
+        if (rc == SQLITE_ROW) {
+            const unsigned char* nutricionista_raw = sqlite3_column_text(stmt, 0);
+            if (nutricionista_raw != nullptr) {
+                nutricionist = reinterpret_cast<const char*>(nutricionista_raw);
+            } else {
+                nutricionist = "";
+            }
+            
+            const unsigned char* alimentos_raw = sqlite3_column_text(stmt, 1);
+            if (alimentos_raw != nullptr) {
+                foodAvoided = reinterpret_cast<const char*>(alimentos_raw);
+            } else {
+                foodAvoided = "";
+            }
+            
+            carbohydrate = sqlite3_column_int(stmt, 2);
+            protein = sqlite3_column_int(stmt, 3);
+            fat = sqlite3_column_int(stmt, 4);
+            
+            const unsigned char* vitaminas_raw = sqlite3_column_text(stmt, 5);
+            if (vitaminas_raw != nullptr) {
+                vitamins = reinterpret_cast<const char*>(vitaminas_raw);
+            } else {
+                vitamins = "";
+            }
+            
+            std::cout << "Plano alimentar carregado com sucesso para paciente ID: " << id << std::endl;
+            
+        } else if (rc == SQLITE_DONE) {
+            std::cout << "Nenhum plano alimentar encontrado para paciente ID: " << id << std::endl;
+        } else {
+            std::cerr << "Erro ao executar consulta: " << sqlite3_errmsg(db) << std::endl;
+        }
+        
+        sqlite3_finalize(stmt);  
+        sqlite3_close(db);
+    }
+    catch(const std::exception& e) {
+        std::cerr << "Exceção: " << e.what() << std::endl;
+    }
+}
+
+void MealPlan::display_mealPlan(){
+    std::cout<<"Nutricionista: "<<nutricionist<<"\nAlimentos evitados: "<<foodAvoided<<"\nVitaminas: "<<vitamins
+    <<"\nCarboidrato: "<<carbohydrate<<"g\nProteina :"<<protein<<"g\nGordura: "<<fat<<"g\n";
 }
