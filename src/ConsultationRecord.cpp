@@ -54,7 +54,7 @@ void ConsultationRecord::registerDB(int id){
             sqlite3_bind_text(stmt, 2, timeStr.str().c_str(), -1, SQLITE_TRANSIENT);
             sqlite3_bind_text(stmt, 3, this->getDate().c_str(), -1, SQLITE_TRANSIENT);
             if (sqlite3_step(stmt) == SQLITE_DONE) {
-                std::cout << "Registro se saude inserido com sucesso com sucesso!" << std::endl;
+                std::cout << "Registro de saude inserido com sucesso com sucesso!" << std::endl;
                 sqlite3_finalize(stmt);
                 int idRecord = sqlite3_last_insert_rowid(db);//pega o id da ultima insercao
                 const char* insert2 = "INSERT INTO RegistroConsulta (RegistroSaude, Medico, Especialidade, Local, Descricao) VALUES (?,?,?,?,?)";
