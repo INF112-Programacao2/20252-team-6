@@ -18,6 +18,6 @@ class MealPlan{
     int protein, int carbohydrate, int fat, const Patient& patient);
     ~MealPlan();
     void register_mealPlan(int id);
-    void change_mealPlan(int id);
+    bool change_mealPlan(int id);
 };
 #endif

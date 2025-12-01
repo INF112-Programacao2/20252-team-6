@@ -118,16 +118,43 @@ void update_int(int id, const std::string campo, int& valor){
 }
 
 
-void MealPlan::change_mealPlan(int id){
-    //conectando ao banco de  dados
-    sqlite3* db;
-    sqlite3_stmt* stmt;
-
-    int rc=sqlite3_open("database.db",&db);
-    if (rc) {
+bool MealPlan::change_mealPlan(int id) {
+    sqlite3* db = nullptr;
+    sqlite3_stmt* stmt = nullptr;
+    
+    int rc = sqlite3_open("database.db", &db);
+    if (rc != SQLITE_OK) {
         std::cerr << "Erro ao abrir banco: " << sqlite3_errmsg(db) << std::endl;
+        return false;
     }
+    
+    //verificar se o Plano já existe no banco
+    const char* select = "SELECT Id FROM PlanoAlimentar WHERE Id = ?";
+    
+    rc = sqlite3_prepare_v2(db, select, -1, &stmt, nullptr);
+    if (rc != SQLITE_OK) {
+        std::cerr << "Erro ao preparar consulta: " << sqlite3_errmsg(db) << std::endl;
+        sqlite3_finalize(stmt);
+        sqlite3_close(db);
+        return false;
+    }
+    
+    //vincular o parâmetro
+    sqlite3_bind_int(stmt, 1, id);
+    
+    //executar consulta
+    rc = sqlite3_step(stmt);
+    bool planoExiste = (rc == SQLITE_ROW);
 
+    sqlite3_finalize(stmt);
+    
+    if (!planoExiste) {
+        std::cout << "Nao existe plano alimentar deste paciente.\n";
+        sqlite3_close(db);
+        return false;
+    }
+    
+    //se existir, permitir alterações
     bool continuos = true;
     while(continuos){
         std::cout<<"\nDigite o numero referente ao que deseja alterar:\n";
@@ -221,5 +248,7 @@ void MealPlan::change_mealPlan(int id){
             break;
         }
     }
+    
     sqlite3_close(db);
+    return true;
 }
