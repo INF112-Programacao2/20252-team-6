@@ -6,17 +6,19 @@
 #include <sqlite3.h>
 
 // Construtor pra novo medicamento (id = -1, será gerado quando salvar no banco)
-Medication::Medication(int patientId, std::string name, Time timeMedication,
+Medication::Medication(int patientId, std::string name, int timeMedication,
                        double dosage, std::string doctor) 
     : id(-1), patientId(patientId), name(name),
       timeMedication(timeMedication), dosage(dosage), doctor(doctor)
 {
-    // Validações dos dados
     if (patientId <= 0) {
         throw std::invalid_argument("ID do paciente deve ser maior que zero.");
     }
     if (name.empty()) {
         throw std::invalid_argument("Nome do medicamento não pode ser vazio.");
+    }
+    if (timeMedication <= 0) {
+        throw std::invalid_argument("Intervalo deve ser maior que zero.");
     }
     if (dosage <= 0) {
         throw std::invalid_argument("Dosagem deve ser maior que zero.");
@@ -30,12 +32,11 @@ Medication::Medication(int patientId, std::string name, Time timeMedication,
 }
 
 // Construtor pra carregar medicamento do banco (já tem id)
-Medication::Medication(int id, int patientId, std::string name, Time timeMedication,
+Medication::Medication(int id, int patientId, std::string name, int timeMedication,
                        double dosage, std::string doctor) 
     : id(id), patientId(patientId), name(name),
       timeMedication(timeMedication), dosage(dosage), doctor(doctor)
 {
-    // Validações (incluindo o id agora)
     if (id <= 0) {
         throw std::invalid_argument("ID do medicamento deve ser maior que zero.");
     }
@@ -44,6 +45,9 @@ Medication::Medication(int id, int patientId, std::string name, Time timeMedicat
     }
     if (name.empty()) {
         throw std::invalid_argument("Nome do medicamento não pode ser vazio.");
+    }
+    if (timeMedication <= 0) {
+        throw std::invalid_argument("Intervalo deve ser maior que zero.");
     }
     if (dosage <= 0) {
         throw std::invalid_argument("Dosagem deve ser maior que zero.");
@@ -62,8 +66,7 @@ Medication::~Medication(){}
 void Medication::printInfo() const
 {
   std::cout << "Nome: " << this->name << "\n";
-  std::cout << "Intervalo: ";
-  this->timeMedication.displayTime24();
+  std::cout << "Intervalo: " << this->timeMedication << " horas\n";
   std::cout << "Dosagem: " << this->dosage << "\n";
   std::cout << "Medico: " << this->doctor << "\n";
 }
@@ -94,7 +97,7 @@ std::string Medication::getDoctor() const
   return this->doctor;
 }
 
-Time Medication::getTimeMedication() const
+int Medication::getTimeMedication() const
 {
   return this->timeMedication;
 }
@@ -118,25 +121,17 @@ void Medication::saveToDB()
     sqlite3_stmt* stmt = nullptr;
 
     try {
-        // Abre conexão com o banco
         int rc = sqlite3_open("database.db", &db);
         if (rc != SQLITE_OK) {
             throw std::runtime_error(std::string("Erro ao abrir banco de dados: ") + sqlite3_errmsg(db));
         }
 
-        // Converte o horário (Time) pra string no formato HH:MM:SS
-        std::ostringstream timeStr;
-        timeStr << std::setfill('0') << std::setw(2) << timeMedication.getHour() << ":"
-                << std::setfill('0') << std::setw(2) << timeMedication.getMinute() << ":"
-                << std::setfill('0') << std::setw(2) << timeMedication.getSecond();
+        std::string timeStr = std::to_string(timeMedication);
         
-        // Verificar se a medicação já existe
         const char* sqlCheck = nullptr;
         if (this->id > 0) {
-            // Medicação já foi salva antes - verifica por ID
             sqlCheck = "SELECT Id FROM Medicacao WHERE Id = ?";
         } else {
-            // Medicação nova - verifica por Paciente + Nome + Horario
             sqlCheck = "SELECT Id FROM Medicacao WHERE Paciente = ? AND Nome = ? AND Horario = ?";
         }
         
@@ -149,16 +144,14 @@ void Medication::saveToDB()
         } else {
             sqlite3_bind_int(stmt, 1, patientId);
             sqlite3_bind_text(stmt, 2, name.c_str(), -1, SQLITE_TRANSIENT);
-            sqlite3_bind_text(stmt, 3, timeStr.str().c_str(), -1, SQLITE_TRANSIENT);
+            sqlite3_bind_text(stmt, 3, timeStr.c_str(), -1, SQLITE_TRANSIENT);
         }
         
         if (sqlite3_step(stmt) == SQLITE_ROW) {
-            // Medicação já existe - pega o ID e atualiza
             int medicacaoId = sqlite3_column_int(stmt, 0);
             sqlite3_finalize(stmt);
             stmt = nullptr;
 
-            // UPDATE na tabela Medicacao
             const char* sqlUpdate = "UPDATE Medicacao SET Dosagem = ?, Medico = ? WHERE Id = ?";
             
             if (sqlite3_prepare_v2(db, sqlUpdate, -1, &stmt, nullptr) != SQLITE_OK) {
@@ -173,7 +166,6 @@ void Medication::saveToDB()
                 throw std::runtime_error(std::string("Erro ao executar UPDATE (Medicacao): ") + sqlite3_errmsg(db));
             }
 
-            // Atualiza o ID do objeto se ainda não estava setado
             if (this->id <= 0) {
                 this->id = medicacaoId;
             }
@@ -182,7 +174,6 @@ void Medication::saveToDB()
             sqlite3_finalize(stmt);
             stmt = nullptr;
         } else {
-            // Medicação não existe - insere nova
             sqlite3_finalize(stmt);
             stmt = nullptr;
 
@@ -194,16 +185,14 @@ void Medication::saveToDB()
 
             sqlite3_bind_int(stmt, 1, patientId);
             sqlite3_bind_text(stmt, 2, name.c_str(), -1, SQLITE_TRANSIENT);
-            sqlite3_bind_text(stmt, 3, timeStr.str().c_str(), -1, SQLITE_TRANSIENT);
+            sqlite3_bind_text(stmt, 3, timeStr.c_str(), -1, SQLITE_TRANSIENT);
             sqlite3_bind_double(stmt, 4, dosage);
             sqlite3_bind_text(stmt, 5, doctor.c_str(), -1, SQLITE_TRANSIENT);
 
-            // Executa a inserção
             if (sqlite3_step(stmt) != SQLITE_DONE) {
                 throw std::runtime_error(std::string("Erro ao executar INSERT (Medicacao): ") + sqlite3_errmsg(db));
             }
 
-            // Pega o ID gerado pelo banco e atualiza o objeto
             this->id = static_cast<int>(sqlite3_last_insert_rowid(db));
             
             std::cout << "Novo medicamento inserido. ID: " << this->id << std::endl;
@@ -233,4 +222,126 @@ void Medication::saveToDB()
         }
         throw;
     }
+}
+
+// Carrega medicamento do banco pelo ID
+Medication* Medication::loadFromDB(int medicationID)
+{
+    sqlite3* db = nullptr;
+    sqlite3_stmt* stmt = nullptr;
+    Medication* loadedMedication = nullptr;
+    
+    int id = -1, patientId = -1, timeMedication = 0;
+    double dosage = 0.0;
+    std::string name, doctor;
+
+    try {
+        int rc = sqlite3_open("database.db", &db);
+        if (rc != SQLITE_OK) {
+            throw std::runtime_error(std::string("Erro ao abrir banco de dados: ") + sqlite3_errmsg(db));
+        }
+
+        const char* sql = "SELECT Id, Paciente, Nome, Horario, Dosagem, Medico FROM Medicacao WHERE Id = ?";
+        
+        if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+            throw std::runtime_error(std::string("Erro ao preparar consulta (Medicacao): ") + sqlite3_errmsg(db));
+        }
+
+        sqlite3_bind_int(stmt, 1, medicationID);
+
+        if (sqlite3_step(stmt) == SQLITE_ROW) {
+            auto get_text = [](sqlite3_stmt* s, int col) -> std::string {
+                const unsigned char* text = sqlite3_column_text(s, col);
+                return text ? reinterpret_cast<const char*>(text) : "";
+            };
+
+            id = sqlite3_column_int(stmt, 0);
+            patientId = sqlite3_column_int(stmt, 1);
+            name = get_text(stmt, 2);
+            std::string timeStr = get_text(stmt, 3);
+            timeMedication = std::stoi(timeStr);
+            dosage = sqlite3_column_double(stmt, 4);
+            doctor = get_text(stmt, 5);
+            
+            loadedMedication = new Medication(id, patientId, name, timeMedication, dosage, doctor);
+            std::cout << "Medicamento carregado. ID: " << id << std::endl;
+        } else {
+            std::cout << "Medicamento com ID " << medicationID << " não encontrado." << std::endl;
+            loadedMedication = nullptr;
+        }
+
+        sqlite3_finalize(stmt);
+        sqlite3_close(db);
+
+    } catch (const std::exception& e) {
+        std::cerr << "Exceção ao carregar medicamento: " << e.what() << std::endl;
+        if (stmt) sqlite3_finalize(stmt);
+        if (db) sqlite3_close(db);
+        return nullptr;
+    } catch (...) {
+        std::cerr << "Erro desconhecido ao carregar medicamento." << std::endl;
+        if (stmt) sqlite3_finalize(stmt);
+        if (db) sqlite3_close(db);
+        return nullptr;
+    }
+
+    return loadedMedication;
+}
+
+// Carrega todos os medicamentos de um paciente
+std::vector<Medication*> Medication::loadAllByPatient(int patientID)
+{
+    sqlite3* db = nullptr;
+    sqlite3_stmt* stmt = nullptr;
+    std::vector<Medication*> medications;
+
+    try {
+        int rc = sqlite3_open("database.db", &db);
+        if (rc != SQLITE_OK) {
+            throw std::runtime_error(std::string("Erro ao abrir banco de dados: ") + sqlite3_errmsg(db));
+        }
+
+        const char* sql = "SELECT Id, Paciente, Nome, Horario, Dosagem, Medico FROM Medicacao WHERE Paciente = ?";
+        
+        if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+            throw std::runtime_error(std::string("Erro ao preparar consulta (Medicacao): ") + sqlite3_errmsg(db));
+        }
+
+        sqlite3_bind_int(stmt, 1, patientID);
+
+        auto get_text = [](sqlite3_stmt* s, int col) -> std::string {
+            const unsigned char* text = sqlite3_column_text(s, col);
+            return text ? reinterpret_cast<const char*>(text) : "";
+        };
+
+        while (sqlite3_step(stmt) == SQLITE_ROW) {
+            int id = sqlite3_column_int(stmt, 0);
+            int patientId = sqlite3_column_int(stmt, 1);
+            std::string name = get_text(stmt, 2);
+            std::string timeStr = get_text(stmt, 3);
+            int timeMedication = std::stoi(timeStr);
+            double dosage = sqlite3_column_double(stmt, 4);
+            std::string doctor = get_text(stmt, 5);
+            
+            Medication* med = new Medication(id, patientId, name, timeMedication, dosage, doctor);
+            medications.push_back(med);
+        }
+
+        sqlite3_finalize(stmt);
+        sqlite3_close(db);
+        std::cout << "Carregados " << medications.size() << " medicamento(s) do paciente ID " << patientID << std::endl;
+
+    } catch (const std::exception& e) {
+        std::cerr << "Exceção ao carregar medicamentos: " << e.what() << std::endl;
+        if (stmt) sqlite3_finalize(stmt);
+        if (db) sqlite3_close(db);
+        return medications;
+    } catch (...) {
+        std::cerr << "Erro desconhecido ao carregar medicamentos." << std::endl;
+        if (stmt) sqlite3_finalize(stmt);
+        if (db) sqlite3_close(db);
+        return medications;
+    }
+
+    return medications;
 }

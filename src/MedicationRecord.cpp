@@ -123,8 +123,7 @@ void MedicationRecord::displayDetails()
     getHour().displayTime24();
     std::cout << "Medicamento: " << medication.getName() << std::endl;
     std::cout << "Dosagem: " << medication.getDosage() << std::endl;
-    std::cout << "Intervalo de administração: ";
-    medication.getTimeMedication().displayTime24();
+    std::cout << "Intervalo de administração: " << medication.getTimeMedication() << " horas" << std::endl;
     std::cout << "Médico responsável: " << medication.getDoctor() << std::endl;
     std::cout << "Paciente: " << getPatient().getName() << std::endl;
 }
@@ -133,5 +132,146 @@ void MedicationRecord::displayDetails()
 const Medication& MedicationRecord::getMedication() const
 {
     return medication;
+}
+
+// Carrega registro do banco pelo ID
+MedicationRecord* MedicationRecord::loadFromDB(int recordID)
+{
+    sqlite3* db = nullptr;
+    sqlite3_stmt* stmt = nullptr;
+    MedicationRecord* loadedRecord = nullptr;
+    
+    int registroSaudeId = -1;
+    int patientId = -1;
+    int medicationId = -1;
+    std::string date, hourStr;
+    
+    Patient* patient = nullptr;
+    Medication* medication = nullptr;
+
+    try {
+        int rc = sqlite3_open("database.db", &db);
+        if (rc != SQLITE_OK) {
+            throw std::runtime_error(std::string("Erro ao abrir banco de dados: ") + sqlite3_errmsg(db));
+        }
+
+        const char* sql = "SELECT RegistroSaude, Medicacao FROM RegistroMedicacao WHERE Id = ?";
+        
+        if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+            throw std::runtime_error(std::string("Erro ao preparar consulta (RegistroMedicacao): ") + sqlite3_errmsg(db));
+        }
+
+        sqlite3_bind_int(stmt, 1, recordID);
+
+        if (sqlite3_step(stmt) == SQLITE_ROW) {
+            registroSaudeId = sqlite3_column_int(stmt, 0);
+            medicationId = sqlite3_column_int(stmt, 1);
+        } else {
+            std::cout << "Registro de medicação com ID " << recordID << " não encontrado." << std::endl;
+            sqlite3_finalize(stmt);
+            sqlite3_close(db);
+            return nullptr;
+        }
+
+        sqlite3_finalize(stmt);
+        stmt = nullptr;
+
+        const char* sql2 = "SELECT Paciente, Data, Hora FROM RegistroSaude WHERE Id = ?";
+        
+        if (sqlite3_prepare_v2(db, sql2, -1, &stmt, nullptr) != SQLITE_OK) {
+            throw std::runtime_error(std::string("Erro ao preparar consulta (RegistroSaude): ") + sqlite3_errmsg(db));
+        }
+
+        sqlite3_bind_int(stmt, 1, registroSaudeId);
+
+        if (sqlite3_step(stmt) == SQLITE_ROW) {
+            auto get_text = [](sqlite3_stmt* s, int col) -> std::string {
+                const unsigned char* text = sqlite3_column_text(s, col);
+                return text ? reinterpret_cast<const char*>(text) : "";
+            };
+
+            patientId = sqlite3_column_int(stmt, 0);
+            date = get_text(stmt, 1);
+            hourStr = get_text(stmt, 2);
+        } else {
+            std::cout << "RegistroSaude com ID " << registroSaudeId << " não encontrado." << std::endl;
+            sqlite3_finalize(stmt);
+            sqlite3_close(db);
+            return nullptr;
+        }
+
+        sqlite3_finalize(stmt);
+        stmt = nullptr;
+
+        medication = Medication::loadFromDB(medicationId);
+        if (!medication) {
+            std::cout << "Medicamento com ID " << medicationId << " não encontrado." << std::endl;
+            sqlite3_close(db);
+            return nullptr;
+        }
+
+        const char* sql3 = "SELECT p.Nome, p.Cpf, p.Endereco, p.Sexo, p.Idade, p.Senha, "
+                          "pac.TipoDiabetes, pac.TipoSanguineo, pac.Peso, pac.Altura "
+                          "FROM Pessoa p "
+                          "INNER JOIN Paciente pac ON pac.Pessoa = p.id "
+                          "WHERE pac.Id = ?";
+        
+        if (sqlite3_prepare_v2(db, sql3, -1, &stmt, nullptr) != SQLITE_OK) {
+            throw std::runtime_error(std::string("Erro ao preparar consulta (Paciente): ") + sqlite3_errmsg(db));
+        }
+
+        sqlite3_bind_int(stmt, 1, patientId);
+
+        if (sqlite3_step(stmt) == SQLITE_ROW) {
+            auto get_text = [](sqlite3_stmt* s, int col) -> std::string {
+                const unsigned char* text = sqlite3_column_text(s, col);
+                return text ? reinterpret_cast<const char*>(text) : "";
+            };
+
+            std::string name = get_text(stmt, 0);
+            std::string cpf = get_text(stmt, 1);
+            std::string adress = get_text(stmt, 2);
+            std::string gender = get_text(stmt, 3);
+            int age = sqlite3_column_int(stmt, 4);
+            std::string password = get_text(stmt, 5);
+            std::string diabetesType = get_text(stmt, 6);
+            std::string bloodType = get_text(stmt, 7);
+            double weight = sqlite3_column_double(stmt, 8);
+            double height = sqlite3_column_double(stmt, 9);
+            
+            patient = new Patient(name, cpf, adress, gender, age, password, 
+                                diabetesType, bloodType, weight, height);
+        } else {
+            std::cout << "Paciente com ID " << patientId << " não encontrado." << std::endl;
+            sqlite3_finalize(stmt);
+            sqlite3_close(db);
+            delete medication;
+            return nullptr;
+        }
+
+        sqlite3_finalize(stmt);
+        sqlite3_close(db);
+
+        Time hour(hourStr);
+        loadedRecord = new MedicationRecord(*patient, date, hour, *medication);
+        std::cout << "Registro de medicação carregado. ID: " << recordID << std::endl;
+
+    } catch (const std::exception& e) {
+        std::cerr << "Exceção ao carregar registro: " << e.what() << std::endl;
+        if (stmt) sqlite3_finalize(stmt);
+        if (db) sqlite3_close(db);
+        if (medication) delete medication;
+        if (patient) delete patient;
+        return nullptr;
+    } catch (...) {
+        std::cerr << "Erro desconhecido ao carregar registro." << std::endl;
+        if (stmt) sqlite3_finalize(stmt);
+        if (db) sqlite3_close(db);
+        if (medication) delete medication;
+        if (patient) delete patient;
+        return nullptr;
+    }
+
+    return loadedRecord;
 }
 

@@ -1,7 +1,7 @@
 #ifndef MEDICATION_HPP
 #define MEDICATION_HPP
 #include <string>
-#include "Time.hpp"
+#include <vector>
 
 // Classe que representa um medicamento prescrito para um paciente
 // Guarda nome, horário de administração, dosagem, etc.
@@ -11,15 +11,15 @@ private:
   int id;                          // ID no banco (gerado automaticamente)
   int patientId;                   // ID do paciente que usa esse medicamento
   const std::string name;         // Nome do medicamento
-  Time timeMedication;            // Intervalo entre administrações 
-  double dosage;                  // Dosagem (pode mudar)
-  const std::string doctor;       // Nome do médico que prescreveu
+  int timeMedication;              // Intervalo entre administrações (em horas)
+  double dosage;                   // Dosagem (pode mudar)
+  const std::string doctor;        // Nome do médico que prescreveu
 
 public:
   // Construtor pra criar novo medicamento (id = -1 inicialmente)
-  Medication(int patientId, std::string name, Time timeMedication, double dosage, std::string doctor);
+  Medication(int patientId, std::string name, int timeMedication, double dosage, std::string doctor);
   // Construtor pra carregar medicamento do banco (com id já definido)
-  Medication(int id, int patientId, std::string name, Time timeMedication, double dosage, std::string doctor);
+  Medication(int id, int patientId, std::string name, int timeMedication, double dosage, std::string doctor);
   ~Medication();
   
   // Mostra todas as infos do medicamento
@@ -31,13 +31,19 @@ public:
   int getId() const;
   int getPatientId() const;
   std::string getDoctor() const;
-  Time getTimeMedication() const;
+  int getTimeMedication() const;
   
   // Setter da dosagem (valida antes de setar)
   void setDosage(double dosage);
   
   // Salva o medicamento no banco de dados
   void saveToDB();
+  
+  // Carrega medicamento do banco pelo ID
+  static Medication* loadFromDB(int medicationID);
+  
+  // Carrega todos os medicamentos de um paciente
+  static std::vector<Medication*> loadAllByPatient(int patientID);
 };
 
 #endif

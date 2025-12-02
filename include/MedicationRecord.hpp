@@ -25,6 +25,9 @@ public:
     
     // Getter pro medicamento
     const Medication& getMedication() const;
+    
+    // Carrega registro do banco pelo ID
+    static MedicationRecord* loadFromDB(int recordID);
 };
 
 #endif
