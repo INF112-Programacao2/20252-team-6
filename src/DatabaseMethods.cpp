@@ -3,6 +3,7 @@
 #include <string>
 #include <sqlite3.h>
 #include <regex>
+#include <cstdio>
 #include "../include/DatabaseMethods.hpp"
 
 DatabaseMethods::DatabaseMethods(){}
@@ -386,7 +387,6 @@ bool DatabaseMethods::isValidWeight(const std::string& weightStr) {
         return false;
     }
     
-    // Converte e verifica faixa
     double weight = std::stod(weightStr);
     if (weight < 1.0 || weight > 300.0) {
         std::cout << "Peso deve estar entre 1kg e 300kg.\n";
@@ -408,7 +408,6 @@ bool DatabaseMethods::isValidBloodType(const std::string& bloodType) {
 }
 
 bool DatabaseMethods::isValidAge(const std::string& ageStr) {
-    // Verifica se contém apenas dígitos
     for (char c : ageStr) {
         if (!std::isdigit(c)) {
             std::cout << "Idade deve conter apenas números.\n";
@@ -666,4 +665,44 @@ bool DatabaseMethods::createPatient(){
         return false;
     }
     return false;
+}
+
+bool DatabaseMethods::isValidDateString(const std::string& dateStr) {
+    std::regex date_regex("^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/([0-9]{4})$");
+    
+    if (!std::regex_match(dateStr, date_regex)) {
+        return false;
+    }
+    
+    int dia, mes, ano;
+    if (sscanf(dateStr.c_str(), "%d/%d/%d", &dia, &mes, &ano) != 3) {
+        return false;
+    }
+    
+    if (ano < 1900 || ano > 2100) {
+        return false;
+    }
+    
+    if (mes < 1 || mes > 12) {
+        return false;
+    }
+    
+    int diasNoMes[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+    
+    if (mes == 2 && ((ano % 4 == 0 && ano % 100 != 0) || (ano % 400 == 0))) {
+        diasNoMes[1] = 29;
+    }
+    
+    if (dia < 1 || dia > diasNoMes[mes - 1]) {
+        return false;
+    }
+    
+    return true;
+}
+
+bool DatabaseMethods::isValidTimeString(const std::string& timeStr) {
+    std::regex time_regex1("^([0-1][0-9]|2[0-3]):[0-5][0-9]$");
+    std::regex time_regex2("^([0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$");
+    
+    return std::regex_match(timeStr, time_regex1) || std::regex_match(timeStr, time_regex2);
 }

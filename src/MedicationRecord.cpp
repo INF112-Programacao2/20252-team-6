@@ -18,12 +18,8 @@ MedicationRecord::~MedicationRecord()
 {
 }
 
-// Salva o registro no banco em duas etapas:
-// 1. Insere em RegistroSaude (tabela pai)
-// 2. Insere em RegistroMedicacao (tabela filha) usando o ID gerado
 void MedicationRecord::registerDB(int patientId)
 {
-    // Valida se medicamento foi salvo no banco (tem ID válido)
     if (medication.getId() <= 0) {
         throw std::runtime_error("Medicamento deve ser salvo no banco antes de criar registro. Execute medication.saveToDB() primeiro.");
     }
@@ -34,20 +30,17 @@ void MedicationRecord::registerDB(int patientId)
     int registroSaudeId = -1;
 
     try {
-        // Abre conexão com o banco
         int rc = sqlite3_open("database.db", &db);
         if (rc != SQLITE_OK) {
             throw std::runtime_error(std::string("Erro ao abrir banco de dados: ") + sqlite3_errmsg(db));
         }
 
-        // Primeiro passo: inserir na tabela pai (RegistroSaude)
         const char* sql1 = "INSERT INTO RegistroSaude (Paciente, Data, Hora) VALUES (?, ?, ?)";
         
         if (sqlite3_prepare_v2(db, sql1, -1, &stmt, nullptr) != SQLITE_OK) {
             throw std::runtime_error(std::string("Erro ao preparar consulta (RegistroSaude): ") + sqlite3_errmsg(db));
         }
 
-        // Converte Time para string no formato HH:MM:SS
         std::ostringstream timeStr;
         timeStr << std::setfill('0') << std::setw(2) << getHour().getHour() << ":"
                 << std::setfill('0') << std::setw(2) << getHour().getMinute() << ":"
@@ -61,12 +54,10 @@ void MedicationRecord::registerDB(int patientId)
             throw std::runtime_error(std::string("Erro ao executar inserção em RegistroSaude: ") + sqlite3_errmsg(db));
         }
 
-        // Pega o ID gerado pra usar na tabela filha
         registroSaudeId = static_cast<int>(sqlite3_last_insert_rowid(db));
         sqlite3_finalize(stmt);
         stmt = nullptr;
 
-        // Segundo passo: inserir na tabela filha (RegistroMedicacao)
         const char* sql2 = "INSERT INTO RegistroMedicacao (RegistroSaude, Medicacao) VALUES (?, ?)";
         
         if (sqlite3_prepare_v2(db, sql2, -1, &stmt2, nullptr) != SQLITE_OK) {
@@ -86,7 +77,6 @@ void MedicationRecord::registerDB(int patientId)
         sqlite3_close(db);
 
     } catch (const std::exception& e) {
-        // Tratamento de exceções - limpa todos os recursos
         std::cerr << "Exceção capturada em registerDB: " << e.what() << std::endl;
         if (stmt) {
             sqlite3_finalize(stmt);
@@ -99,7 +89,6 @@ void MedicationRecord::registerDB(int patientId)
         }
         throw;
     } catch (...) {
-        // Catch genérico
         std::cerr << "Erro desconhecido ao registrar medicação." << std::endl;
         if (stmt) {
             sqlite3_finalize(stmt);
@@ -114,7 +103,6 @@ void MedicationRecord::registerDB(int patientId)
     }
 }
 
-// Mostra todos os detalhes do registro de medicação
 void MedicationRecord::displayDetails()
 {
     std::cout << "\n=== Registro de Medicação ===" << std::endl;
