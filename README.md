@@ -19,6 +19,105 @@ O projeto possui a seguinte estrutura de classes:
 ### 📊 Banco de Dados
 O Banco de Dados foi a ferramenta usada no armazenamento de dados de objetos, foi usado o recurso de *Foreign Key* para Trabalhar com *Herança e Colaboração* dentro do Banco de Dados. A ferramenta usada foi o Sqlite3
 
+### 📝 User Stories
+
+1. **Como paciente, eu quero criar uma conta no sistema** para poder acessar e gerenciar meus registros médicos relacionados à diabetes.
+   - Critérios de aceitação: O sistema deve permitir cadastro com CPF, nome, endereço, senha e dados médicos (tipo de diabetes, tipo sanguíneo, altura, peso).
+
+2. **Como paciente, eu quero fazer login no sistema** para acessar minhas informações pessoais e registros de saúde.
+   - Critérios de aceitação: O sistema deve validar CPF e senha, e permitir acesso apenas com credenciais corretas.
+
+3. **Como paciente, eu quero registrar meus níveis de glicose** para acompanhar minha condição ao longo do tempo.
+   - Critérios de aceitação: O sistema deve permitir registrar data, hora, nível de glicose e se estava em jejum, além de exibir comentários sobre o nível registrado.
+
+4. **Como paciente, eu quero visualizar o histórico de glicose em gráfico ou tabela** para entender melhor a evolução dos meus níveis de açúcar no sangue.
+   - Critérios de aceitação: O sistema deve exibir registros ordenados por data e hora, permitindo visualização em formato de tabela ou gráfico.
+
+5. **Como paciente, eu quero registrar consultas médicas e exames** para manter um histórico completo do meu tratamento.
+   - Critérios de aceitação: O sistema deve permitir registrar consultas (médico, especialidade, descrição, local) e exames (nome, laboratório, resultado, médico requisitante) com data e hora.
+
+6. **Como paciente, eu quero gerenciar meu plano alimentar e medicações** para acompanhar minha dieta e tratamento medicamentoso.
+   - Critérios de aceitação: O sistema deve permitir criar e atualizar plano alimentar (nutricionista, carboidratos, proteínas, gorduras, vitaminas, alimentos evitados) e registrar uso de medicações com dosagem e intervalo.
+
+### 🚀 Instalação e Execução
+
+#### Pré-requisitos
+- Sistema operacional: Linux (Ubuntu/Debian) ou Windows
+- Compilador: g++ (GCC) com suporte a C++17
+- Make: ferramenta para build
+- SQLite3: banco de dados
+
+#### Instalação no Linux (Ubuntu/Debian)
+
+1. **Clone o repositório:**
+```bash
+git clone https://github.com/seu-usuario/20252-team-6.git
+cd 20252-team-6
+```
+
+2. **Instale as dependências:**
+```bash
+sudo apt-get update
+sudo apt-get install -y build-essential g++ make sqlite3 libsqlite3-dev
+```
+
+3. **Compile o projeto:**
+```bash
+make
+```
+
+4. **Execute o programa:**
+```bash
+./diarybetes
+```
+
+#### Instalação no Windows
+
+1. **Clone o repositório:**
+```bash
+git clone https://github.com/seu-usuario/20252-team-6.git
+cd 20252-team-6
+```
+
+2. **Instale as dependências:**
+   - **MinGW-w64 ou MSYS2:**
+     - Baixe e instale o MinGW-w64 ou MSYS2
+     - Adicione o caminho do g++ ao PATH do sistema
+   
+   - **Make:**
+     - Instale via Chocolatey: `choco install make`
+     - Ou baixe de: https://www.gnu.org/software/make/
+   
+   - **SQLite3:**
+     - Baixe de: https://www.sqlite.org/download.html
+     - Extraia e adicione ao PATH, ou coloque os arquivos na pasta do projeto
+
+3. **Compile o projeto:**
+```bash
+make
+```
+
+4. **Execute o programa:**
+```bash
+diarybetes.exe
+```
+
+#### Comandos Úteis
+
+- `make` - Compila o projeto
+- `make clean` - Remove arquivos compilados (.o e executável)
+- `make rebuild` - Limpa e recompila tudo
+
+#### Estrutura do Projeto
+```
+20252-team-6/
+├── include/          # Headers (.hpp)
+├── src/              # Código fonte (.cpp)
+├── main.cpp          # Arquivo principal
+├── Makefile          # Arquivo de build
+└── README.md         # Este arquivo
+```
+
 ### 🛠️ Outras Ferramentas
 Foi usado:
 - Notion e Slack para gerenciamento;
