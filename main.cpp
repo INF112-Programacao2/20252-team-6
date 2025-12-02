@@ -251,8 +251,16 @@ int main(){
                 }
 
                 int glucoselvl;
-                std::cout << "Qual foi o nivel de glicose do teste?\n";
-                std::cin >> glucoselvl;
+                while(true){
+                    std::cout << "Qual foi o nivel de glicose do teste?\n";
+                    if(std::cin >> glucoselvl){
+                        break;
+                    } else {
+                        std::cout << "Digite um valor valido!\n";
+                        std::cin.clear();
+                        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                    }
+                }
 
                 bool jejum;
                 char jejumc;
@@ -274,6 +282,21 @@ int main(){
                     } else {
                         std::cout << "Digite um caractere valido!\n";
                     }
+                }
+
+                if(glucoselvl > 130 && jejum){
+                    std::cout << "\033[1;31m" << "!!! CONTATE UM MEDICO IMEDIATAMENTE !!!\n";
+                    std::cout << "!!! NIVEL DE GLICOSE NO SANGUE ACIMA DO IDEAL !!!\n" << "\033[0m";
+                }
+
+                if(glucoselvl > 180 && !jejum){
+                    std::cout << "\033[1;31m" << "!!! CONTATE UM MEDICO IMEDIATAMENTE !!!\n";
+                    std::cout << "!!! NIVEL DE GLICOSE NO SANGUE ACIMA DO IDEAL !!!\n" << "\033[0m";
+                }
+
+                if(glucoselvl < 70){
+                    std::cout << "\033[1;31m" << "!!! CONTATE UM MEDICO IMEDIATAMENTE !!!\n";
+                    std::cout << "!!! NIVEL DE GLICOSE NO SANGUE ABAIXO DO IDEAL !!!\n" << "\033[0m";
                 }
 
                 GlucoseRecord registroGlicose(*paciente_real, data, *horas, glucoselvl, jejum);
