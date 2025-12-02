@@ -5,18 +5,19 @@
 #include <stdexcept>
 #include <sqlite3.h>
 
-// Construtor pra novo medicamento (id = -1, será gerado quando salvar no banco)
-Medication::Medication(int patientId, std::string name, Time timeMedication,
+Medication::Medication(int patientId, std::string name, int timeMedication,
                        double dosage, std::string doctor) 
     : id(-1), patientId(patientId), name(name),
       timeMedication(timeMedication), dosage(dosage), doctor(doctor)
 {
-    // Validações dos dados
     if (patientId <= 0) {
         throw std::invalid_argument("ID do paciente deve ser maior que zero.");
     }
     if (name.empty()) {
         throw std::invalid_argument("Nome do medicamento não pode ser vazio.");
+    }
+    if (timeMedication <= 0) {
+        throw std::invalid_argument("Intervalo deve ser maior que zero.");
     }
     if (dosage <= 0) {
         throw std::invalid_argument("Dosagem deve ser maior que zero.");
@@ -29,13 +30,11 @@ Medication::Medication(int patientId, std::string name, Time timeMedication,
     }
 }
 
-// Construtor pra carregar medicamento do banco (já tem id)
-Medication::Medication(int id, int patientId, std::string name, Time timeMedication,
+Medication::Medication(int id, int patientId, std::string name, int timeMedication,
                        double dosage, std::string doctor) 
     : id(id), patientId(patientId), name(name),
       timeMedication(timeMedication), dosage(dosage), doctor(doctor)
 {
-    // Validações (incluindo o id agora)
     if (id <= 0) {
         throw std::invalid_argument("ID do medicamento deve ser maior que zero.");
     }
@@ -44,6 +43,9 @@ Medication::Medication(int id, int patientId, std::string name, Time timeMedicat
     }
     if (name.empty()) {
         throw std::invalid_argument("Nome do medicamento não pode ser vazio.");
+    }
+    if (timeMedication <= 0) {
+        throw std::invalid_argument("Intervalo deve ser maior que zero.");
     }
     if (dosage <= 0) {
         throw std::invalid_argument("Dosagem deve ser maior que zero.");
@@ -58,12 +60,10 @@ Medication::Medication(int id, int patientId, std::string name, Time timeMedicat
 
 Medication::~Medication(){}
 
-// Printa todas as infos do medicamento
 void Medication::printInfo() const
 {
   std::cout << "Nome: " << this->name << "\n";
-  std::cout << "Intervalo: ";
-  this->timeMedication.displayTime24();
+  std::cout << "Intervalo: " << this->timeMedication << " horas\n";
   std::cout << "Dosagem: " << this->dosage << "\n";
   std::cout << "Medico: " << this->doctor << "\n";
 }
@@ -94,7 +94,7 @@ std::string Medication::getDoctor() const
   return this->doctor;
 }
 
-Time Medication::getTimeMedication() const
+int Medication::getTimeMedication() const
 {
   return this->timeMedication;
 }
@@ -141,7 +141,7 @@ void Medication::saveToDB()
         } else {
             sqlite3_bind_int(stmt, 1, patientId);
             sqlite3_bind_text(stmt, 2, name.c_str(), -1, SQLITE_TRANSIENT);
-            sqlite3_bind_text(stmt, 3, timeStr.str().c_str(), -1, SQLITE_TRANSIENT);
+            sqlite3_bind_text(stmt, 3, timeStr.c_str(), -1, SQLITE_TRANSIENT);
         }
         
         if (sqlite3_step(stmt) == SQLITE_ROW) {
@@ -182,7 +182,7 @@ void Medication::saveToDB()
 
             sqlite3_bind_int(stmt, 1, patientId);
             sqlite3_bind_text(stmt, 2, name.c_str(), -1, SQLITE_TRANSIENT);
-            sqlite3_bind_text(stmt, 3, timeStr.str().c_str(), -1, SQLITE_TRANSIENT);
+            sqlite3_bind_text(stmt, 3, timeStr.c_str(), -1, SQLITE_TRANSIENT);
             sqlite3_bind_double(stmt, 4, dosage);
             sqlite3_bind_text(stmt, 5, doctor.c_str(), -1, SQLITE_TRANSIENT);
 

@@ -111,8 +111,7 @@ void MedicationRecord::displayDetails()
     getHour().displayTime24();
     std::cout << "Medicamento: " << medication.getName() << std::endl;
     std::cout << "Dosagem: " << medication.getDosage() << std::endl;
-    std::cout << "Intervalo de administração: ";
-    medication.getTimeMedication().displayTime24();
+    std::cout << "Intervalo de administração: " << medication.getTimeMedication() << " horas" << std::endl;
     std::cout << "Médico responsável: " << medication.getDoctor() << std::endl;
     std::cout << "Paciente: " << getPatient().getName() << std::endl;
 }

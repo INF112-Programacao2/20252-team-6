@@ -44,6 +44,8 @@ private slots:
     // Glicose
     void onRegisterGlucose();
     void onViewGlucose();
+    void onViewGlucoseTable();
+    void onViewGlucoseChart();
     
     // Plano Alimentar
     void onRegisterMealPlan();

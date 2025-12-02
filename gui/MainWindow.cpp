@@ -28,6 +28,14 @@
 #include <QStandardPaths>
 #include <QFileInfo>
 #include <QDebug>
+#include <QChartView>
+#include <QLineSeries>
+#include <QDateTimeAxis>
+#include <QValueAxis>
+#include <QChart>
+#include <QDateTime>
+#include <QPushButton>
+#include <QPainter>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -38,21 +46,17 @@ MainWindow::MainWindow(QWidget *parent)
     setWindowTitle("Diarybetes - Sistema de Gerenciamento de Diabetes");
     setMinimumSize(800, 600);
 
-    // Inicializa o DB (cria tabelas se n existir)
     if (!initializeDatabase()) {
         showError("Erro ao inicializar banco de dados. O sistema pode não funcionar corretamente.");
     } else {
-        // Mostra onde o DB ta salvo (só no console/debug)
         QString dbPath = getDatabasePath();
         statusBar()->showMessage(QString("Banco de dados: %1").arg(dbPath), 5000);
     }
 
     statusBar()->showMessage("Sistema iniciado");
 
-    // Botoes desabilitados ate fazer login
     ui->actionsGroupBox->setEnabled(false);
 
-    // Conecta os botoes com os slots
     connect(ui->loginButton, &QPushButton::clicked,
             this, &MainWindow::onLoginClicked);
     connect(ui->createAccountButton, &QPushButton::clicked,
@@ -79,7 +83,6 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-    // unique_ptr ja libera memoria sozinho, so precisa deletar o ui
     delete ui;
 }
 
@@ -95,21 +98,16 @@ void MainWindow::showInfo(const QString& msg)
     statusBar()->showMessage(msg, 3000);
 }
 
-// Retorna o caminho do DB (onde ta o .exe)
 QString MainWindow::getDatabasePath()
 {
-    // Pega o diretorio do executavel
     QString appDir = QApplication::applicationDirPath();
     QString dbPath = QDir(appDir).absoluteFilePath("database.db");
-    
-    // Cria o dir se n existir
     QFileInfo dbFile(dbPath);
     QDir dbDir = dbFile.absoluteDir();
     if (!dbDir.exists()) {
         dbDir.mkpath(".");
     }
     
-    // Retorna caminho com separadores do sistema
     QString nativePath = QDir::toNativeSeparators(dbPath);
     
     qDebug() << "Caminho do banco de dados:" << nativePath;
@@ -117,7 +115,6 @@ QString MainWindow::getDatabasePath()
     return nativePath;
 }
 
-// Slot do botao de login
 void MainWindow::onLoginClicked()
 {
     QString cpf   = ui->cpfLineEdit->text().trimmed();
@@ -195,7 +192,6 @@ void MainWindow::onLoginClicked()
     }
 }
 
-// Marcar consulta
 void MainWindow::onMarkConsultation()
 {
     if (!m_currentPatient || m_patientId <= 0) {
@@ -203,7 +199,6 @@ void MainWindow::onMarkConsultation()
         return;
     }
 
-    // Dialog pra pegar os dados da consulta
     QDialog dialog(this);
     dialog.setWindowTitle("Marcar consulta");
 
@@ -237,7 +232,7 @@ void MainWindow::onMarkConsultation()
     connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
 
     if (dialog.exec() != QDialog::Accepted) {
-        return; // usuario cancelou
+        return;
     }
 
     const QString local      = localEdit->text().trimmed();
@@ -253,11 +248,29 @@ void MainWindow::onMarkConsultation()
         return;
     }
 
+    DatabaseMethods dbMethods;
+    if (!dbMethods.isValidName(medico.toStdString())) {
+        showError("Nome do médico inválido. Use apenas letras e espaços.");
+        return;
+    }
+
+    if (!dbMethods.isValidName(area.toStdString())) {
+        showError("Especialidade inválida. Use apenas letras e espaços.");
+        return;
+    }
+
+    if (!dbMethods.isValidDateString(data.toStdString())) {
+        showError("Data inválida. Use o formato DD/MM/AAAA (ex: 25/12/2024).");
+        return;
+    }
+
+    if (!dbMethods.isValidTimeString(hora.toStdString())) {
+        showError("Hora inválida. Use o formato HH:MM ou HH:MM:SS (ex: 14:30).");
+        return;
+    }
+
     try {
-        // Valida hora antes de criar
         Time timeObj(hora.toStdString());
-        
-        // Usa o metodo do Patient pra marcar consulta
         m_currentPatient->makeAppointment(
             data.toStdString(),
             hora.toStdString(),
@@ -279,7 +292,6 @@ void MainWindow::onMarkConsultation()
     }
 }
 
-// Cria novo paciente no DB
 void MainWindow::onCreateAccountClicked()
 {
     QDialog dialog(this);
@@ -293,13 +305,19 @@ void MainWindow::onCreateAccountClicked()
     QLineEdit* genderEdit   = new QLineEdit(&dialog);
     QLineEdit* ageEdit      = new QLineEdit(&dialog);
     QLineEdit* passwordEdit = new QLineEdit(&dialog);
+    QLineEdit* passwordConfirmEdit = new QLineEdit(&dialog);
     QLineEdit* diabetesEdit = new QLineEdit(&dialog);
     QLineEdit* bloodEdit    = new QLineEdit(&dialog);
     QLineEdit* weightEdit   = new QLineEdit(&dialog);
     QLineEdit* heightEdit   = new QLineEdit(&dialog);
 
     passwordEdit->setEchoMode(QLineEdit::Password);
+    passwordConfirmEdit->setEchoMode(QLineEdit::Password);
     bloodEdit->setPlaceholderText("A+, A-, B+, B-, AB+, AB-, O+, O-");
+    genderEdit->setPlaceholderText("Masculino, Feminino, Outro");
+    ageEdit->setPlaceholderText("Ex: 25");
+    weightEdit->setPlaceholderText("Ex: 70.5");
+    heightEdit->setPlaceholderText("Ex: 1.75");
 
     form->addRow("Nome:",          nameEdit);
     form->addRow("CPF:",           cpfEdit);
@@ -307,6 +325,7 @@ void MainWindow::onCreateAccountClicked()
     form->addRow("Genero:",        genderEdit);
     form->addRow("Idade:",         ageEdit);
     form->addRow("Senha:",         passwordEdit);
+    form->addRow("Confirmar Senha:", passwordConfirmEdit);
     form->addRow("Tipo Diabetes:", diabetesEdit);
     form->addRow("Tipo Sanguineo:", bloodEdit);
     form->addRow("Peso (kg):",     weightEdit);
@@ -323,16 +342,16 @@ void MainWindow::onCreateAccountClicked()
     connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
 
     if (dialog.exec() != QDialog::Accepted) {
-        return; // usuario cancelou
+        return;
     }
 
-    // Pega e valida os dados
     QString name     = nameEdit->text().trimmed();
     QString cpf      = cpfEdit->text().trimmed();
     QString address  = addressEdit->text().trimmed();
     QString gender   = genderEdit->text().trimmed();
     QString ageStr   = ageEdit->text().trimmed();
     QString pass     = passwordEdit->text();
+    QString passConfirm = passwordConfirmEdit->text();
     QString diab     = diabetesEdit->text().trimmed();
     QString blood    = bloodEdit->text().trimmed().toUpper();
     QString weightStr= weightEdit->text().trimmed();
@@ -340,35 +359,53 @@ void MainWindow::onCreateAccountClicked()
 
     if (name.isEmpty() || cpf.isEmpty() || address.isEmpty() ||
         gender.isEmpty() || ageStr.isEmpty() || pass.isEmpty() ||
-        diab.isEmpty() || blood.isEmpty() || weightStr.isEmpty() ||
-        heightStr.isEmpty()) {
+        passConfirm.isEmpty() || diab.isEmpty() || blood.isEmpty() || 
+        weightStr.isEmpty() || heightStr.isEmpty()) {
         showError("Todos os campos são obrigatórios.");
         return;
     }
 
-    bool okAge = false, okWeight = false, okHeight = false;
-    int    age    = ageStr.toInt(&okAge);
-    double weight = weightStr.toDouble(&okWeight);
-    double height = heightStr.toDouble(&okHeight);
-
-    if (!okAge || !okWeight || !okHeight) {
-        showError("Idade, peso e altura devem ser numéricos.");
+    DatabaseMethods dbMethods;
+    if (!dbMethods.isValidName(name.toStdString())) {
+        showError("Nome inválido. Use apenas letras e espaços.");
         return;
     }
 
-    // Validacoes extras
-    if (age < 0 || age > 150) {
+    if (pass != passConfirm) {
+        showError("As senhas não coincidem. Digite novamente.");
+        return;
+    }
+
+    bool okAge = false;
+    int age = ageStr.toInt(&okAge);
+    if (!okAge) {
+        showError("Idade deve ser um número inteiro válido.");
+        return;
+    }
+    if (!dbMethods.isValidAge(std::to_string(age))) {
         showError("Idade deve estar entre 0 e 150 anos.");
         return;
     }
 
-    if (weight <= 0 || weight > 500) {
-        showError("Peso deve estar entre 0.1kg e 500kg.");
+    bool okWeight = false;
+    double weight = weightStr.toDouble(&okWeight);
+    if (!okWeight) {
+        showError("Peso deve ser um número válido (use ponto para decimais, ex: 70.5).");
+        return;
+    }
+    if (!dbMethods.isValidWeight(weightStr.toStdString())) {
+        showError("Peso deve estar entre 1kg e 300kg.");
         return;
     }
 
-    if (height <= 0 || height > 3.0) {
-        showError("Altura deve estar entre 0.1m e 3.0m.");
+    bool okHeight = false;
+    double height = heightStr.toDouble(&okHeight);
+    if (!okHeight) {
+        showError("Altura deve ser um número válido (use ponto para decimais, ex: 1.75).");
+        return;
+    }
+    if (!dbMethods.isValidHeight(heightStr.toStdString())) {
+        showError("Altura deve estar entre 0.5m e 3.0m.");
         return;
     }
 
@@ -376,8 +413,20 @@ void MainWindow::onCreateAccountClicked()
         showError("Senha deve ter pelo menos 3 caracteres.");
         return;
     }
+    if (pass.length() > 50) {
+        showError("Senha muito longa. Máximo 50 caracteres.");
+        return;
+    }
 
-    // Remove tudo que n é numero do CPF
+    QString genderLower = gender.toLower();
+    if (genderLower != "masculino" && genderLower != "feminino" && 
+        genderLower != "m" && genderLower != "f" && 
+        genderLower != "outro" && genderLower != "outros" &&
+        genderLower != "nao informar" && genderLower != "não informar") {
+        showError("Gênero inválido. Use: Masculino, Feminino ou Outro.");
+        return;
+    }
+
     QString cleanCPF = cpf;
     cleanCPF.remove(QRegularExpression("[^0-9]"));
     
@@ -387,21 +436,21 @@ void MainWindow::onCreateAccountClicked()
     }
 
     try {
-        // Verifica se CPF ja existe no DB
-        DatabaseMethods dbMethods;
         std::string cpfStr = cleanCPF.toStdString();
         if (!dbMethods.isValidCPF(cpfStr)) {
             showError("CPF já cadastrado no sistema ou inválido. Verifique o CPF digitado.");
             return;
         }
 
-        // Valida tipo sanguineo
         if (!Patient::isValidBloodType(blood.toStdString())) {
             showError("Tipo sanguíneo inválido. Use A+, A-, B+, B-, AB+, AB-, O+, O-.");
             return;
         }
 
-        // Cria e salva o paciente
+        if (diab.isEmpty() || diab.length() < 2) {
+            showError("Tipo de diabetes inválido. Ex: Tipo 1, Tipo 2, Pré-diabetes.");
+            return;
+        }
         Patient novo(
             name.toStdString(),
             cleanCPF.toStdString(),
@@ -430,7 +479,6 @@ void MainWindow::onCreateAccountClicked()
     }
 }
 
-// Exibir consultas marcadas
 void MainWindow::onViewConsultations()
 {
     if (!m_currentPatient || m_patientId <= 0) {
@@ -551,7 +599,6 @@ void MainWindow::onViewConsultations()
     dialog.exec();
 }
 
-// Marcar exame
 void MainWindow::onMarkExam()
 {
     if (!m_currentPatient || m_patientId <= 0) {
@@ -608,8 +655,33 @@ void MainWindow::onMarkExam()
         return;
     }
 
+    DatabaseMethods dbMethods;
+    if (!dbMethods.isValidName(doutor.toStdString())) {
+        showError("Nome do médico inválido. Use apenas letras e espaços.");
+        return;
+    }
+
+    if (nome.isEmpty() || nome.length() < 2) {
+        showError("Nome do exame inválido. Deve ter pelo menos 2 caracteres.");
+        return;
+    }
+
+    if (lab.isEmpty() || lab.length() < 2) {
+        showError("Nome do laboratório inválido. Deve ter pelo menos 2 caracteres.");
+        return;
+    }
+
+    if (!dbMethods.isValidDateString(data.toStdString())) {
+        showError("Data inválida. Use o formato DD/MM/AAAA (ex: 25/12/2024).");
+        return;
+    }
+
+    if (!dbMethods.isValidTimeString(hora.toStdString())) {
+        showError("Hora inválida. Use o formato HH:MM ou HH:MM:SS (ex: 14:30).");
+        return;
+    }
+
     try {
-        // Valida hora
         Time timeObj(hora.toStdString());
 
         m_currentPatient->bookExam(
@@ -751,7 +823,6 @@ void MainWindow::onViewExams()
     dialog.exec();
 }
 
-// Registrar nivel de glicose
 void MainWindow::onRegisterGlucose()
 {
     if (!m_currentPatient || m_patientId <= 0) {
@@ -803,8 +874,23 @@ void MainWindow::onRegisterGlucose()
         return;
     }
 
+    DatabaseMethods dbMethods;
+    if (!dbMethods.isValidDateString(data.toStdString())) {
+        showError("Data inválida. Use o formato DD/MM/AAAA (ex: 25/12/2024).");
+        return;
+    }
+
+    if (!dbMethods.isValidTimeString(hora.toStdString())) {
+        showError("Hora inválida. Use o formato HH:MM ou HH:MM:SS (ex: 14:30).");
+        return;
+    }
+
+    if (glicose < 0 || glicose > 1000) {
+        showError("Nível de glicose deve estar entre 0 e 1000 mg/dL.");
+        return;
+    }
+
     try {
-        // Valida hora
         Time timeObj(hora.toStdString());
 
         GlucoseRecord registroGlicose(*m_currentPatient, data.toStdString(), timeObj, glicose, jejum);
@@ -822,8 +908,39 @@ void MainWindow::onRegisterGlucose()
     }
 }
 
-// Exibir registros de glicose
 void MainWindow::onViewGlucose()
+{
+    if (!m_currentPatient || m_patientId <= 0) {
+        showError("Nenhum paciente logado. Faça login primeiro.");
+        return;
+    }
+
+    QDialog choiceDialog(this);
+    choiceDialog.setWindowTitle("Visualizar Glicose");
+    QVBoxLayout* choiceLayout = new QVBoxLayout(&choiceDialog);
+    
+    QPushButton* btnTable = new QPushButton("Ver Tabela", &choiceDialog);
+    QPushButton* btnChart = new QPushButton("Ver Gráfico", &choiceDialog);
+    QPushButton* btnCancel = new QPushButton("Cancelar", &choiceDialog);
+    
+    choiceLayout->addWidget(btnTable);
+    choiceLayout->addWidget(btnChart);
+    choiceLayout->addWidget(btnCancel);
+    
+    connect(btnTable, &QPushButton::clicked, [&]() {
+        choiceDialog.accept();
+        onViewGlucoseTable();
+    });
+    connect(btnChart, &QPushButton::clicked, [&]() {
+        choiceDialog.accept();
+        onViewGlucoseChart();
+    });
+    connect(btnCancel, &QPushButton::clicked, &choiceDialog, &QDialog::reject);
+    
+    choiceDialog.exec();
+}
+
+void MainWindow::onViewGlucoseTable()
 {
     if (!m_currentPatient || m_patientId <= 0) {
         showError("Nenhum paciente logado. Faça login primeiro.");
@@ -943,7 +1060,142 @@ void MainWindow::onViewGlucose()
     dialog.exec();
 }
 
-// Registrar plano alimentar
+void MainWindow::onViewGlucoseChart()
+{
+    if (!m_currentPatient || m_patientId <= 0) {
+        showError("Nenhum paciente logado. Faça login primeiro.");
+        return;
+    }
+
+    QDialog dialog(this);
+    dialog.setWindowTitle("Gráfico de Histórico de Glicose");
+    dialog.resize(900, 600);
+
+    QVBoxLayout* layout = new QVBoxLayout(&dialog);
+
+    sqlite3* database = nullptr;
+    sqlite3_stmt* stmt = nullptr;
+    
+    try {
+        QString dbPath = getDatabasePath();
+        int rc = sqlite3_open(dbPath.toUtf8().constData(), &database);
+        if (rc != SQLITE_OK) {
+            showError(QString("Erro ao abrir banco de dados: %1").arg(sqlite3_errmsg(database)));
+            if (database) sqlite3_close(database);
+            return;
+        }
+        
+        const char* query = 
+            "SELECT rg.NivelGlicose, rs.Data, rs.Hora "
+            "FROM RegistroGlicose rg "
+            "JOIN RegistroSaude rs ON rg.RegistroSaude = rs.Id "
+            "WHERE rs.Paciente = ? "
+            "ORDER BY rs.Data ASC, rs.Hora ASC";
+        
+        if (sqlite3_prepare_v2(database, query, -1, &stmt, nullptr) != SQLITE_OK) {
+            showError(QString("Erro ao preparar consulta: %1").arg(sqlite3_errmsg(database)));
+            if (database) sqlite3_close(database);
+            return;
+        }
+
+        sqlite3_bind_int(stmt, 1, m_patientId);
+
+        QLineSeries* series = new QLineSeries();
+        series->setName("Glicose (mg/dL)");
+
+        int count = 0;
+        QDateTime dtMin;
+        QDateTime dtMax;
+        double gMin = 1000;
+        double gMax = 0;
+
+        while (sqlite3_step(stmt) == SQLITE_ROW) {
+            double glicose = sqlite3_column_double(stmt, 0);
+            QString data = QString::fromUtf8(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
+            QString hora = QString::fromUtf8(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
+
+            QString dtStr = data + " " + hora;
+            QDateTime dt = QDateTime::fromString(dtStr, "dd/MM/yyyy HH:mm:ss");
+            if (!dt.isValid()) {
+                dt = QDateTime::fromString(dtStr, "dd/MM/yyyy HH:mm");
+            }
+
+            if (dt.isValid()) {
+                qint64 ts = dt.toMSecsSinceEpoch();
+                series->append(ts, glicose);
+                count++;
+
+                if (count == 1) {
+                    dtMin = dt;
+                    dtMax = dt;
+                } else {
+                    if (dt < dtMin) dtMin = dt;
+                    if (dt > dtMax) dtMax = dt;
+                }
+
+                if (glicose < gMin) gMin = glicose;
+                if (glicose > gMax) gMax = glicose;
+            }
+        }
+
+        sqlite3_finalize(stmt);
+        sqlite3_close(database);
+        database = nullptr;
+
+        if (count == 0) {
+            showInfo("Nenhum registro de glicose encontrado.");
+            return;
+        }
+
+        QChart* chart = new QChart();
+        chart->addSeries(series);
+        chart->setTitle("Histórico de Glicose");
+        chart->legend()->setVisible(true);
+        chart->legend()->setAlignment(Qt::AlignBottom);
+
+        QDateTimeAxis* axisX = new QDateTimeAxis();
+        axisX->setFormat("dd/MM/yyyy HH:mm");
+        axisX->setTitleText("Data e Hora");
+        axisX->setMin(dtMin);
+        axisX->setMax(dtMax);
+        chart->addAxis(axisX, Qt::AlignBottom);
+        series->attachAxis(axisX);
+
+        QValueAxis* axisY = new QValueAxis();
+        axisY->setTitleText("Glicose (mg/dL)");
+        double yMin = (gMin > 20) ? gMin - 20 : 0;
+        double yMax = gMax + 20;
+        axisY->setMin(yMin);
+        axisY->setMax(yMax);
+        chart->addAxis(axisY, Qt::AlignLeft);
+        series->attachAxis(axisY);
+
+        QChartView* chartView = new QChartView(chart);
+        chartView->setRenderHint(QPainter::Antialiasing);
+        layout->addWidget(chartView);
+
+        QLabel* infoLabel = new QLabel(QString("Total: %1 registros").arg(count), &dialog);
+        layout->addWidget(infoLabel);
+
+        QDialogButtonBox* buttons = new QDialogButtonBox(QDialogButtonBox::Ok, Qt::Horizontal, &dialog);
+        layout->addWidget(buttons);
+        connect(buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+
+        dialog.exec();
+
+    } catch (const std::exception& e) {
+        showError(QString("Erro ao buscar registros de glicose: %1").arg(e.what()));
+        if (stmt) sqlite3_finalize(stmt);
+        if (database) sqlite3_close(database);
+        return;
+    } catch (...) {
+        showError("Erro desconhecido ao buscar registros de glicose.");
+        if (stmt) sqlite3_finalize(stmt);
+        if (database) sqlite3_close(database);
+        return;
+    }
+}
+
 void MainWindow::onRegisterMealPlan()
 {
     if (!m_currentPatient || m_patientId <= 0) {
@@ -1024,7 +1276,6 @@ void MainWindow::onRegisterMealPlan()
     }
 }
 
-// Alterar plano alimentar
 void MainWindow::onChangeMealPlan()
 {
     if (!m_currentPatient || m_patientId <= 0) {
@@ -1032,7 +1283,6 @@ void MainWindow::onChangeMealPlan()
         return;
     }
 
-    // Pega o ID do plano alimentar do paciente
     sqlite3* database = nullptr;
     sqlite3_stmt* stmt = nullptr;
     int planoId = -1;
@@ -1066,7 +1316,6 @@ void MainWindow::onChangeMealPlan()
         return;
     }
 
-    // Dialog pra alterar o plano
     bool continuar = true;
     while (continuar) {
         QDialog dialog(this);
@@ -1257,7 +1506,6 @@ void MainWindow::onChangeMealPlan()
     }
 }
 
-// Exibir plano alimentar
 void MainWindow::onViewMealPlan()
 {
     if (!m_currentPatient || m_patientId <= 0) {
@@ -1347,14 +1595,12 @@ void MainWindow::onViewMealPlan()
     dialog.exec();
 }
 
-// Inicializa o DB criando todas as tabelas
 bool MainWindow::initializeDatabase()
 {
     sqlite3* db = nullptr;
     char* errMsg = nullptr;
     
     try {
-        // Abre conexao com o DB (cria o arquivo se n existir)
         QString dbPath = getDatabasePath();
         int rc = sqlite3_open(dbPath.toUtf8().constData(), &db);
         if (rc != SQLITE_OK) {
@@ -1362,8 +1608,6 @@ bool MainWindow::initializeDatabase()
             sqlite3_close(db);
             return false;
         }
-        
-        // SQL pra criar todas as tabelas
         const char* sql = 
             "BEGIN TRANSACTION;"
             "CREATE TABLE IF NOT EXISTS \"Medicacao\" ("
@@ -1454,7 +1698,6 @@ bool MainWindow::initializeDatabase()
             ");"
             "COMMIT;";
         
-        // Executa o SQL
         rc = sqlite3_exec(db, sql, nullptr, nullptr, &errMsg);
         if (rc != SQLITE_OK) {
             std::cerr << "Erro ao criar tabelas: " << (errMsg ? errMsg : sqlite3_errmsg(db)) << std::endl;
