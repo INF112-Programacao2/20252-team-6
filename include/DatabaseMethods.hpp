@@ -12,6 +12,7 @@ public:
     void displayDetailsGlucoseRecordDB(int id);
     void displayDetailsMedicationRecordDB(int id);
     bool createPatient();
+    void displayMedications(int id);
     bool isValidAge(const std::string& ageStr);
     bool isValidName(const std::string& name);
     bool isValidWeight(const std::string& weightStr);

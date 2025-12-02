@@ -4,6 +4,7 @@
 #include <sqlite3.h>
 #include <regex>
 #include "../include/DatabaseMethods.hpp"
+#include "../include/Medication.hpp"
 
 DatabaseMethods::DatabaseMethods(){}
 DatabaseMethods::~DatabaseMethods(){}
@@ -674,8 +675,8 @@ bool DatabaseMethods::createPatient(){
                 const char* insert2 = "INSERT INTO Paciente (Pessoa, Altura, Peso, TipoDiabetes, TipoSanguineo) VALUES (?,?,?,?,?)";
                 if (sqlite3_prepare_v2(db, insert2, -1, &stmt2, nullptr) == SQLITE_OK) {
                         sqlite3_bind_int(stmt2, 1, idPerson);
-                        sqlite3_bind_double(stmt2, 2, weight);
-                        sqlite3_bind_double(stmt2, 3, height);
+                        sqlite3_bind_double(stmt2, 2, height);
+                        sqlite3_bind_double(stmt2, 3, weight);
                         sqlite3_bind_text(stmt2, 4, dyabetesType.c_str(), -1, SQLITE_TRANSIENT);
                         sqlite3_bind_text(stmt2, 5, bloodType.c_str(), -1, SQLITE_TRANSIENT);
                     if (sqlite3_step(stmt2) == SQLITE_DONE) {
@@ -710,4 +711,115 @@ bool DatabaseMethods::createPatient(){
         return false;
     }
     return false;
+}
+
+void DatabaseMethods::displayMedications(int id){
+ sqlite3* db = nullptr;
+    sqlite3_stmt* stmt = nullptr;
+    
+    try {
+        int rc = sqlite3_open("database.db", &db);
+        if (rc != SQLITE_OK) {
+            std::cerr << "Erro ao abrir database: " << sqlite3_errmsg(db) << std::endl;
+            return;
+        }
+
+        const char* query = 
+            "SELECT m.Id, m.Nome, m.Horario, m.Dosagem, m.Medico, p.Nome as PacienteNome "
+            "FROM Medicacao m "
+            "JOIN Paciente pa ON m.Paciente = pa.Id "
+            "JOIN Pessoa p ON pa.Pessoa = p.id "
+            "WHERE m.Paciente = ? "
+            "ORDER BY m.Horario";
+            
+        if (sqlite3_prepare_v2(db, query, -1, &stmt, nullptr) == SQLITE_OK) {
+            sqlite3_bind_int(stmt, 1, id);
+            
+            // Cabeçalho da tabela
+            std::cout << "\n" << std::string(90, '-') << "\n";
+            std::cout << "Medicamentos do Paciente\n";
+            std::cout << std::string(90, '-') << "\n";
+            
+            std::cout << std::left
+                    << std::setw(4) << "Id"
+                    << "|" 
+                    << std::setw(25) << "Medicamento"
+                    << "|" 
+                    << std::setw(15) << "Horario"
+                    << "|" 
+                    << std::setw(12) << "Dosagem"
+                    << "|" 
+                    << std::setw(25) << "Medico que receitou"
+                    << "\n";
+            std::cout << std::string(90, '-') << "\n";
+    
+            int recordCount = 0;
+            
+            // Processar cada linha do resultado
+            while (sqlite3_step(stmt) == SQLITE_ROW) {
+                // Obter valores com verificação de NULL
+                auto get_text = [](sqlite3_stmt* s, int col) -> std::string {
+                    const unsigned char* text = sqlite3_column_text(s, col);
+                    return text ? reinterpret_cast<const char*>(text) : "";
+                };
+                
+                int id = sqlite3_column_int(stmt, 0);
+                std::string name = get_text(stmt, 1);
+                std::string timeStr = get_text(stmt, 2);
+                double dosage = sqlite3_column_double(stmt, 3);
+                std::string doctor = get_text(stmt, 4);
+                std::string patientName = get_text(stmt, 5); // Para informação, não exibe na tabela
+                
+                // Limitar o tamanho dos textos para caber na tabela
+                if (name.length() > 23) {
+                    name = name.substr(0, 23) + "...";
+                }
+                
+                if (doctor.length() > 23) {
+                    doctor = doctor.substr(0, 23) + "...";
+                }
+                
+                // Formatar dosagem
+                std::string dosageStr = std::to_string(dosage) + " mg";
+                if (dosageStr.length() > 10) {
+                    dosageStr = dosageStr.substr(0, 10) + "..";
+                }
+
+                std::cout << std::left
+                    << std::setw(4) << id
+                    << "|"
+                    << std::setw(25) << name
+                    << "|"
+                    << std::setw(15) << timeStr
+                    << "|"
+                    << std::setw(12) << dosageStr
+                    << "|"
+                    << std::setw(25) << doctor
+                    << "\n";
+                
+                recordCount++;
+            }
+            
+            // Rodapé da tabela
+            std::cout << std::string(90, '-') << "\n";
+            std::cout << "Total de medicamentos encontrados: " << recordCount << "\n";
+            std::cout << std::string(90, '-') << "\n";
+            
+            if (recordCount == 0) {
+                std::cout << "Nenhum medicamento cadastrado para este paciente.\n";
+            }
+            
+            sqlite3_finalize(stmt);
+        }
+        else {
+            std::cerr << "Erro ao preparar consulta: " << sqlite3_errmsg(db) << std::endl;
+        }
+        
+        sqlite3_close(db);
+    }
+    catch(const std::exception& e) {
+        std::cerr << "Exceção em displayPatientMedicationsTable: " << e.what() << std::endl;
+        if (stmt) sqlite3_finalize(stmt);
+        if (db) sqlite3_close(db);
+    }
 }

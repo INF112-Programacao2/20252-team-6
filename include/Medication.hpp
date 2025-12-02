@@ -42,8 +42,6 @@ public:
   // Carrega medicamento do banco pelo ID
   static Medication* loadFromDB(int medicationID);
   
-  // Carrega todos os medicamentos de um paciente
-  static std::vector<Medication*> loadAllByPatient(int patientID);
 };
 
 #endif
