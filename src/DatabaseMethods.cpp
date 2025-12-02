@@ -792,7 +792,7 @@ void DatabaseMethods::displayMedications(int id){
                     << "|"
                     << std::setw(15) << timeStr
                     << "|"
-                    << std::setw(12) << dosageStr
+                    << std::setw(12) << std::fixed << std::setprecision(2) << dosageStr
                     << "|"
                     << std::setw(25) << doctor
                     << "\n";

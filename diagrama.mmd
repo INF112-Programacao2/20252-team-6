@@ -1,0 +1,110 @@
+classDiagram
+    class Person{
+        -string cpf
+        -string name
+        -string gender
+        -int age
+        -string adress
+        -string password
+        +void print info()
+    }
+    class Patient{
+        -string dyabetesType
+        -string bloodType
+        -double height
+        -double weight
+        +makeAppointament()
+        +cancelAppointament()
+        +bookExam()
+
+    }
+    
+    Person <|-- Patient 
+    
+    class MealPlan{
+        -string foodAvoided
+        -string nutricionist
+        -int protein
+        -int fat
+        -int carbohydrate
+        -string vitams
+        +register_mealPlan()
+        +change_planoAlimentar()
+        +load_mealPlan()
+        +display_mealPlan()
+    }
+
+    class Medication {
+      -string name
+      -string dosage
+      -string doctor
+      -string tipo
+      +printInfo()
+      +loadFromDB()
+      +setDosage()
+      +saveToDB()
+    }
+
+    class HealthRecord  {
+      <<Abstract>>
+      -Patient patient
+      -string date
+      -string hour
+      +displayDetails()
+      +registerDB()
+    }
+
+    class GlucoseRecord  {
+      -float glocose level
+      -bool fat
+      +displayDetails()
+      +registerDB()
+    }
+
+    class ConsultationRecord  {
+      -string doctor
+      -string specialty
+      -string descrition
+      -string local
+      +displayDetails()
+      +registerDB()
+    }
+
+    class ExamRecord {
+      -string name
+      -string result
+      -string lab
+      -string doctor
+      +displayDetails()
+      +registerDB()
+    }
+
+    class MedicationRecord{
+        Medication medication
+        +displayDetails()
+        +registerDB()
+    }
+
+    class DatabaseMethods{
+        +displayExamRecordDB()
+        +displayConsultationRecord()
+        +displayMedicationRecord()
+        +displayGlucoseRecord()
+        +displayMedication()
+        +isValidAge()
+        +isValidName()
+        +isValidAge()
+        +isValidCPF()
+        +isValidWeight()
+        +isValidHeight()
+        +isValidBloodType()
+        +isValidDate()
+    }
+
+    Medication "1" *-- "0..*" MedicationRecord : possui
+    Patient "1" *-- "0..*" HealthRecord :  usadoEm
+    Patient  "1"*--"1" MealPlan : possui
+    HealthRecord <|-- MedicationRecord
+    HealthRecord <|-- GlucoseRecord
+    HealthRecord <|-- ConsultationRecord
+    HealthRecord <|-- ExamRecord
