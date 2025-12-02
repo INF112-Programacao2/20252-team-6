@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS "Pessoa" (
 	"Nome"	TEXT,
 	"Cpf"	TEXT,
 	"Sexo"	TEXT,
-	"Senha"	TEXT,
+	"Senha"	INTEGER,
 	"Endereco"	TEXT,
 	"Idade"	INTEGER,
 	PRIMARY KEY("id" AUTOINCREMENT)
