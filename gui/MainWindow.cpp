@@ -28,14 +28,14 @@
 #include <QStandardPaths>
 #include <QFileInfo>
 #include <QDebug>
+#include <QDateTime>
+#include <QPushButton>
+#include <QPainter>
 #include <QChartView>
 #include <QLineSeries>
 #include <QDateTimeAxis>
 #include <QValueAxis>
 #include <QChart>
-#include <QDateTime>
-#include <QPushButton>
-#include <QPainter>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -1187,12 +1187,10 @@ void MainWindow::onViewGlucoseChart()
         showError(QString("Erro ao buscar registros de glicose: %1").arg(e.what()));
         if (stmt) sqlite3_finalize(stmt);
         if (database) sqlite3_close(database);
-        return;
     } catch (...) {
         showError("Erro desconhecido ao buscar registros de glicose.");
         if (stmt) sqlite3_finalize(stmt);
         if (database) sqlite3_close(database);
-        return;
     }
 }
 
