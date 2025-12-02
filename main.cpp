@@ -12,6 +12,7 @@
 #include "include/GlucoseRecord.hpp"
 #include "include/DatabaseMethods.hpp"
 #include "include/Time.hpp"
+#include "include/Medication.hpp"
 
 int main(){
     
@@ -97,7 +98,9 @@ int main(){
             std::cout << "7) Registrar plano alimentar  \n";
             std::cout << "8) Mudar plano alimentar      \n";
             std::cout << "9) Exibir plano alimentar     \n";
-            std::cout << "10) Sair                      \n";
+            std::cout << "10) Registrar um medicamento  \n";
+            std::cout << "11) Exibir medicamentos       \n";
+            std::cout << "12) Sair                      \n";
             std::cout << "==============================\n";
             if(std::cin >> choice){
                 break;
@@ -394,11 +397,13 @@ int main(){
                 plano.register_mealPlan(ID);
             }
 
+            // Modficar Plano Alimentar
             case 8: {
                 MealPlan plano("-", "-", "-", 0, 0, 0, paciente_temporario);
                 plano.change_mealPlan(ID);
             }
 
+            // Exibir Plano Alimentar
             case 9: {
                 MealPlan exibir(*paciente_real);
                 if(exibir.load_mealPlan(ID)){
@@ -408,7 +413,54 @@ int main(){
                 break;
             }
 
-            case 10 : {
+            // Registrar medicamento
+            case 10: {
+                std::string nome;
+                std::cout << "Qual o nome do medicamento?\n";
+                std::cin.ignore();
+                std::getline(std::cin, nome);
+
+                std::string doutor;
+                std::cout << "Qual o nome do medico que receitou?\n";
+                std::getline(std::cin, doutor);
+
+                int horas;
+                while(true){
+                    std::cout << "Qual a frequencia do remedio em horas? ex. 8 (De 8 em 8 horas)\n";
+                    if(std::cin >> horas){
+                        break;
+                    } else {
+                        std::cout << "Digite um valor valido!\n";
+                        std::cin.clear();
+                        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                    }
+                }
+
+                double dosagem;
+                while(true){
+                    std::cout << "Qual a dosagem do medicamento? ex. 1.0 , 1.5\n";
+                    if(std::cin >> dosagem){
+                        break;
+                    } else {
+                        std::cout << "Digite um valor valido!\n";
+                        std::cin.clear();
+                        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                    }
+                }
+
+                Medication remedio(ID, nome, horas, dosagem, doutor);
+                remedio.saveToDB();
+
+                break;
+            }
+
+            case 11 : {
+                DatabaseMethods exibir;
+                exibir.displayMedications(ID);
+                break;
+            }
+
+            case 12 : {
                 continuous = false;
                 break;
             }
