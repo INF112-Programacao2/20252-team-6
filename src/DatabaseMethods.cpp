@@ -29,9 +29,9 @@ void DatabaseMethods::displayDetailsExamRecordDB(int id) {
                 sqlite3_bind_int(stmt, 1, id);
                 
                 //cabeçalho da tabela
-                std::cout << "\n" << std::string(150, '-') << "\n";
+                std::cout << "\n" << std::string(156, '-') << "\n";
                 std::cout << "Registros de exame do paciente\n";
-                std::cout << std::string(150, '-') << "\n";
+                std::cout << std::string(156, '-') << "\n";
                 
                 std::cout << std::left
                         << std::setw(20) << "Exame"
@@ -46,7 +46,7 @@ void DatabaseMethods::displayDetailsExamRecordDB(int id) {
                         << "|" 
                         << std::setw(5) << "Hora"
                         << "\n";
-                std::cout << std::string(150, '-') << "\n";
+                std::cout << std::string(156, '-') << "\n";
         
             int recordCount = 0;
                 
@@ -80,9 +80,9 @@ void DatabaseMethods::displayDetailsExamRecordDB(int id) {
                     
                     recordCount++;
                 }
-            std::cout << std::string(150, '-') << "\n";
+            std::cout << std::string(156, '-') << "\n";
             std::cout << "Total de registros encontrados: " << recordCount << "\n";
-            std::cout << std::string(150, '-') << "\n";
+            std::cout << std::string(156, '-') << "\n";
             sqlite3_finalize(stmt);
         }
         else {
@@ -117,9 +117,9 @@ void DatabaseMethods::displayDetailsConsultationRecordDB(int id){
                 sqlite3_bind_int(stmt, 1, id);
                 
                 //cabeçalho da tabela
-                std::cout << "\n" << std::string(150, '-') << "\n";
+                std::cout << "\n" << std::string(153, '-') << "\n";
                 std::cout << "Registros de consulta do paciente\n";
-                std::cout << std::string(150, '-') << "\n";
+                std::cout << std::string(153, '-') << "\n";
                 
                 std::cout << std::left
                         << std::setw(20) << "Medico"
@@ -134,7 +134,7 @@ void DatabaseMethods::displayDetailsConsultationRecordDB(int id){
                         << "|" 
                         << std::setw(5) << "Hora"
                         << "\n";
-                std::cout << std::string(150, '-') << "\n";
+                std::cout << std::string(153, '-') << "\n";
         
             int recordCount = 0;
                 
@@ -168,9 +168,9 @@ void DatabaseMethods::displayDetailsConsultationRecordDB(int id){
                     
                     recordCount++;
                 }
-            std::cout << std::string(150, '-') << "\n";
+            std::cout << std::string(153, '-') << "\n";
             std::cout << "Total de registros encontrados: " << recordCount << "\n";
-            std::cout << std::string(150, '-') << "\n";
+            std::cout << std::string(153, '-') << "\n";
             sqlite3_finalize(stmt);
         }
         else {
@@ -206,9 +206,9 @@ void DatabaseMethods::displayDetailsGlucoseRecordDB(int id) {
             sqlite3_bind_int(stmt, 1, id);
             
             // Cabeçalho da tabela
-            std::cout << "\n" << std::string(38, '-') << "\n";
+            std::cout << "\n" << std::string(44, '-') << "\n";
             std::cout << "Registros de glicose" << "\n";
-            std::cout << std::string(38, '-') << "\n";
+            std::cout << std::string(44, '-') << "\n";
             
             std::cout << std::left
                       << std::setw(12) << "Glicose"
@@ -219,7 +219,7 @@ void DatabaseMethods::displayDetailsGlucoseRecordDB(int id) {
                       << "|"
                       << std::setw(5) << "Hora"
                       << "\n";
-            std::cout << std::string(38, '-') << "\n";
+            std::cout << std::string(44, '-') << "\n";
     
             int recordCount = 0;
             
@@ -268,9 +268,9 @@ void DatabaseMethods::displayDetailsGlucoseRecordDB(int id) {
                 recordCount++;
             }
             
-            std::cout << std::string(38, '-') << "\n";
+            std::cout << std::string(44, '-') << "\n";
             std::cout << "Total de registros: " << recordCount << "\n";
-            std::cout << std::string(38, '-') << "\n";
+            std::cout << std::string(44, '-') << "\n";
             
             sqlite3_finalize(stmt);
         }
@@ -286,7 +286,7 @@ void DatabaseMethods::displayDetailsGlucoseRecordDB(int id) {
 }
 
 void DatabaseMethods::displayDetailsMedicationRecordDB(int id){
-   sqlite3* db;
+    sqlite3* db;
     sqlite3_stmt* stmt;
     
     try {
@@ -439,6 +439,50 @@ bool DatabaseMethods::isValidAge(const std::string& ageStr) {
         std::cout << "Idade invalida.\n";
         return false;
     }
+}
+
+bool DatabaseMethods::isValidDateString(const std::string& dataStr) {
+    // Padrões aceitos: dd/mm/yyyy ou dd-mm-yyyy
+    if (dataStr.length() != 10) {  // dd/mm/yyyy ou dd-mm-yyyy tem 10 caracteres
+        return false;
+    }
+    std::regex pattern(R"((0[1-9]|[12][0-9]|3[01])[/-](0[1-9]|1[0-2])[/-](\d{4}))");
+    std::smatch matches;
+    
+    if (!std::regex_match(dataStr, matches, pattern)) {
+        return false;
+    }
+    
+    try {
+        int dia = std::stoi(matches[1].str());
+        int mes = std::stoi(matches[2].str());
+        int ano = std::stoi(matches[3].str());
+        
+        // Validações de ano (agora regex já garante mês 01-12 e dia 01-31)
+        if (ano < 1900 || ano > 2100) return false;
+        
+        // Verificar quantidade de dias no mês
+        int diasNoMes[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+        
+        // Ajustar para ano bissexto (fevereiro tem 29 dias)
+        bool bissexto = false;
+        if ((ano % 4 == 0 && ano % 100 != 0) || (ano % 400 == 0)) {
+            bissexto = true;
+        }
+        
+        if (bissexto && mes == 2) {
+            if (dia > 29) return false;
+        } else {
+            if (dia > diasNoMes[mes - 1]) return false;
+        }
+        
+        return true;
+        
+    } catch (const std::exception& e) {
+        // Em caso de erro na conversão (improvável, mas seguro)
+        return false;
+    }
+
 }
 
 bool DatabaseMethods::isValidCPF(std::string& cpfStr) {

@@ -17,6 +17,7 @@ int main(){
     
     std::string cpf;
     std::string senha;
+    DatabaseMethods geral; // Criação de objeto para uso de métodos
 
     while(true){
         int escolha;
@@ -108,7 +109,6 @@ int main(){
         }
 
         switch (choice){
-
             // Marcar Consulta
             case 1: {
                 std::string localizacao;
@@ -119,14 +119,29 @@ int main(){
                 std::string area;
                 std::cout << "Deseja marcar com que especialista?\n";
                 std::getline(std::cin,area);
+                while (!geral.isValidName(area)) {
+                    std::cout << "Especialidade inválida! Use apenas letras e espaços.\n";
+                    std::cout << "Digite a especialidade novamente: ";
+                    std::getline(std::cin, area);
+                }
 
                 std::string nome;
                 std::cout << "Qual o nome do medico?\n";
                 std::getline(std::cin,nome);
+                while (!geral.isValidName(nome)) {
+                    std::cout << "Nome inválido! Use apenas letras e espaços.\n";
+                    std::cout << "Digite seu nome novamente: ";
+                    std::getline(std::cin, nome);
+                }
 
                 std::string data;
-                std::cout << "Deseja marcar em que data?\n";
+                std::cout << "Deseja marcar em que data?(DD/MM/AAAA)?\n";
                 std::getline(std::cin,data);
+                while (!geral.isValidDateString(data)) {
+                    std::cout << "Data inválida! Use (DD/MM/AAAA).\n";
+                    std::cout << "Digite a data novamente: ";
+                    std::getline(std::cin, data);
+                }
 
                 std::string hora;
                 std::unique_ptr<Time> horas = nullptr;
@@ -186,8 +201,13 @@ int main(){
                 std::getline(std::cin, resultado);
 
                 std::string data;
-                std::cout << "Qual foi a data do exame?\n";
-                std::getline(std::cin, data);
+                std::cout << "Qual foi a data do exame?(DD/MM/AAAA)?\n";
+                std::getline(std::cin,data);
+                while (!geral.isValidDateString(data)) {
+                    std::cout << "Data inválida! Use (DD/MM/AAAA).\n";
+                    std::cout << "Digite a data novamente: ";
+                    std::getline(std::cin, data);
+                }
 
                 std::string hora;
                 std::unique_ptr<Time> horas = nullptr;
@@ -226,9 +246,13 @@ int main(){
             // Registrar Glicose
             case 5: {
                 std::string data;
-                std::cout << "Qual foi a data do teste de glicose?\n";
-                std::cin.ignore();
-                std::getline(std::cin, data);
+                std::cout << "Qual a data do teste de glicose?(DD/MM/AAAA)?\n";
+                std::getline(std::cin,data);
+                while (!geral.isValidDateString(data)) {
+                    std::cout << "Data inválida! Use (DD/MM/AAAA).\n";
+                    std::cout << "Digite a data novamente: ";
+                    std::getline(std::cin, data);
+                }
 
                 std::string hora;
                 std::unique_ptr<Time> horas;

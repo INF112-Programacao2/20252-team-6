@@ -18,6 +18,7 @@ public:
     bool isValidHeight(const std::string& heightStr);
     bool isValidCPF(std::string& cpfStr);
     bool isValidBloodType(const std::string& bloodType);
+    bool isValidDateString(const std::string& date);
 };
 #endif
 
