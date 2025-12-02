@@ -20,7 +20,7 @@ class MealPlan{
     ~MealPlan();
     void register_mealPlan(int id);
     bool change_mealPlan(int id);
-    void load_mealPlan(int id);
+    bool load_mealPlan(int id);
     void display_mealPlan();
 };
 #endif

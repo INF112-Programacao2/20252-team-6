@@ -352,6 +352,15 @@ int main(){
                 plano.change_mealPlan(ID);
             }
 
+            case 9: {
+                MealPlan exibir(*paciente_real);
+                if(exibir.load_mealPlan(ID)){
+                exibir.display_mealPlan();
+                }
+
+                break;
+            }
+
             case 10 : {
                 continuous = false;
                 break;

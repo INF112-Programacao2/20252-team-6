@@ -257,15 +257,17 @@ bool MealPlan::change_mealPlan(int id) {
     return true;
 }
 
-void MealPlan::load_mealPlan(int id){
-        sqlite3* db;
+bool MealPlan::load_mealPlan(int id){
+    sqlite3* db;
     sqlite3_stmt* stmt;
+
+    bool existe = false;
     
     try {
         int rc = sqlite3_open("database.db", &db);
         if (rc != SQLITE_OK) {
             std::cerr << "Erro ao abrir database: " << sqlite3_errmsg(db) << std::endl;
-            return;
+            return false;
         }
 
         const char* query = 
@@ -276,7 +278,7 @@ void MealPlan::load_mealPlan(int id){
         if (rc != SQLITE_OK) {
             std::cerr << "Erro ao preparar consulta: " << sqlite3_errmsg(db) << std::endl;
             sqlite3_close(db);
-            return;
+            return false;
         }
         
         sqlite3_bind_int(stmt, 1, id);
@@ -310,6 +312,7 @@ void MealPlan::load_mealPlan(int id){
             }
             
             std::cout << "Plano alimentar carregado com sucesso para paciente ID: " << id << std::endl;
+            existe = true;
             
         } else if (rc == SQLITE_DONE) {
             std::cout << "Nenhum plano alimentar encontrado para paciente ID: " << id << std::endl;
@@ -323,6 +326,8 @@ void MealPlan::load_mealPlan(int id){
     catch(const std::exception& e) {
         std::cerr << "Exceção: " << e.what() << std::endl;
     }
+
+    return existe;
 }
 
 void MealPlan::display_mealPlan(){
