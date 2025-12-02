@@ -762,27 +762,21 @@ void DatabaseMethods::displayMedications(int id){
                     const unsigned char* text = sqlite3_column_text(s, col);
                     return text ? reinterpret_cast<const char*>(text) : "";
                 };
-                
+
                 int id = sqlite3_column_int(stmt, 0);
                 std::string name = get_text(stmt, 1);
                 std::string timeStr = get_text(stmt, 2);
                 double dosage = sqlite3_column_double(stmt, 3);
                 std::string doctor = get_text(stmt, 4);
                 std::string patientName = get_text(stmt, 5); // Para informação, não exibe na tabela
-                
+
                 // Limitar o tamanho dos textos para caber na tabela
                 if (name.length() > 23) {
                     name = name.substr(0, 23) + "...";
                 }
-                
+
                 if (doctor.length() > 23) {
                     doctor = doctor.substr(0, 23) + "...";
-                }
-                
-                // Formatar dosagem
-                std::string dosageStr = std::to_string(dosage) + " mg";
-                if (dosageStr.length() > 10) {
-                    dosageStr = dosageStr.substr(0, 10) + "..";
                 }
 
                 std::cout << std::left
@@ -792,11 +786,11 @@ void DatabaseMethods::displayMedications(int id){
                     << "|"
                     << std::setw(15) << timeStr
                     << "|"
-                    << std::setw(12) << std::fixed << std::setprecision(2) << dosageStr
+                    << std::setw(12) << std::fixed << std::setprecision(2) << dosage << "mg"
                     << "|"
                     << std::setw(25) << doctor
                     << "\n";
-                
+
                 recordCount++;
             }
             
