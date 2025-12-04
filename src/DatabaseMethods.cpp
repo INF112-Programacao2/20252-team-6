@@ -3,8 +3,11 @@
 #include <string>
 #include <sqlite3.h>
 #include <regex>
+#include <ctime>
+#include <sstream>
 #include "../include/DatabaseMethods.hpp"
 #include "../include/Medication.hpp"
+#include "../include/Time.hpp"
 
 DatabaseMethods::DatabaseMethods(){}
 DatabaseMethods::~DatabaseMethods(){}
@@ -815,5 +818,150 @@ void DatabaseMethods::displayMedications(int id){
         std::cerr << "Exceção em displayPatientMedicationsTable: " << e.what() << std::endl;
         if (stmt) sqlite3_finalize(stmt);
         if (db) sqlite3_close(db);
+    }
+}
+
+bool DatabaseMethods::isDateTimeNotFuture(const std::string& date, const std::string& time) {
+    try {
+        std::time_t now = std::time(nullptr);
+        std::tm* localTime = std::localtime(&now);
+        
+        if (!localTime) {
+            throw std::runtime_error("Erro ao obter data/hora atual.");
+        }
+        
+        int currentYear = localTime->tm_year + 1900;
+        int currentMonth = localTime->tm_mon + 1;
+        int currentDay = localTime->tm_mday;
+        int currentHour = localTime->tm_hour;
+        int currentMinute = localTime->tm_min;
+        
+        std::regex datePattern(R"((0[1-9]|[12][0-9]|3[01])[/-](0[1-9]|1[0-2])[/-](\d{4}))");
+        std::smatch dateMatches;
+        
+        if (!std::regex_match(date, dateMatches, datePattern)) {
+            return false;
+        }
+        
+        int providedDay = std::stoi(dateMatches[1].str());
+        int providedMonth = std::stoi(dateMatches[2].str());
+        int providedYear = std::stoi(dateMatches[3].str());
+        
+        Time providedTime(time);
+        int providedHour = providedTime.getHour();
+        int providedMinute = providedTime.getMinute();
+        
+
+        if (providedYear > currentYear) {
+            return false;
+        }
+        if (providedYear < currentYear) {
+            return true; 
+        }
+        
+     
+        if (providedMonth > currentMonth) {
+            return false;
+        }
+        if (providedMonth < currentMonth) {
+            return true;
+        }
+        
+    
+        if (providedDay > currentDay) {
+            return false;
+        }
+        if (providedDay < currentDay) {
+            return true;
+        }
+        
+        if (providedHour > currentHour) {
+            return false;
+        }
+        if (providedHour < currentHour) {
+            return true;
+        }
+        
+        if (providedMinute > currentMinute) {
+            return false;
+        }
+        
+        return true;
+        
+    } catch (const std::exception& e) {
+        std::cerr << "Exceção em isDateTimeNotFuture: " << e.what() << std::endl;
+        return false;
+    }
+}
+
+bool DatabaseMethods::isDateTimeNotPast(const std::string& date, const std::string& time) {
+    try {
+
+        std::time_t now = std::time(nullptr);
+        std::tm* localTime = std::localtime(&now);
+        
+        if (!localTime) {
+            throw std::runtime_error("Erro ao obter data/hora atual.");
+        }
+        
+        int currentYear = localTime->tm_year + 1900;
+        int currentMonth = localTime->tm_mon + 1;
+        int currentDay = localTime->tm_mday;
+        int currentHour = localTime->tm_hour;
+        int currentMinute = localTime->tm_min;
+        
+  
+        std::regex datePattern(R"((0[1-9]|[12][0-9]|3[01])[/-](0[1-9]|1[0-2])[/-](\d{4}))");
+        std::smatch dateMatches;
+        
+        if (!std::regex_match(date, dateMatches, datePattern)) {
+            return false;
+        }
+        
+        int providedDay = std::stoi(dateMatches[1].str());
+        int providedMonth = std::stoi(dateMatches[2].str());
+        int providedYear = std::stoi(dateMatches[3].str());
+        
+        Time providedTime(time);
+        int providedHour = providedTime.getHour();
+        int providedMinute = providedTime.getMinute();
+        
+        if (providedYear < currentYear) {
+            return false;
+        }
+        if (providedYear > currentYear) {
+            return true; 
+        }
+        
+        if (providedMonth < currentMonth) {
+            return false;
+        }
+        if (providedMonth > currentMonth) {
+            return true;
+        }
+        
+        if (providedDay < currentDay) {
+            return false;
+        }
+        if (providedDay > currentDay) {
+            return true;
+        }
+        
+        if (providedHour < currentHour) {
+            return false;
+        }
+        if (providedHour > currentHour) {
+            return true;
+        }
+        
+        if (providedMinute < currentMinute) {
+            return false;
+        }
+        
+        return true;
+        
+    } catch (const std::exception& e) {
+        std::cerr << "Exceção em isDateTimeNotPast: " << e.what() << std::endl;
+        return false;
     }
 }

@@ -91,7 +91,7 @@ int main(){
             std::cout << "Selecione o que quer fazer:   \n";
             std::cout << "1) Marcar uma consulta        \n";
             std::cout << "2) Exibir consultas marcadas  \n";
-            std::cout << "3) Marcar um exame            \n";
+            std::cout << "3) Inserir resultado exame    \n";
             std::cout << "4) Exibir exames marcados     \n";
             std::cout << "5) Registrar nivel de glicose \n";
             std::cout << "6) Exibir registros de glicose\n";
@@ -138,17 +138,17 @@ int main(){
                 }
 
                 std::string data;
-                std::cout << "Deseja marcar em que data?(DD/MM/AAAA)?\n";
-                std::getline(std::cin,data);
-                while (!geral.isValidDateString(data)) {
-                    std::cout << "Data inválida! Use (DD/MM/AAAA).\n";
-                    std::cout << "Digite a data novamente: ";
-                    std::getline(std::cin, data);
-                }
-
                 std::string hora;
                 std::unique_ptr<Time> horas = nullptr;
                 while(true){
+                    std::cout << "Deseja marcar em que data?(DD/MM/AAAA)?\n";
+                    std::getline(std::cin,data);
+                    while (!geral.isValidDateString(data)) {
+                        std::cout << "Data inválida! Use (DD/MM/AAAA).\n";
+                        std::cout << "Digite a data novamente: ";
+                        std::getline(std::cin, data);
+                    }
+
                     while(true){
                         std::cout << "Deseja marcar que horas? (HH:MM)\n";
                         std::getline(std::cin,hora);
@@ -161,9 +161,14 @@ int main(){
                     }
                     horas = std::make_unique<Time>(hora);
                     if((horas->getHour() >= 0 && horas->getHour() < 24) && (horas->getMinute() >= 0 && horas->getMinute() < 60) && (horas->getSecond() >= 0 && horas->getSecond() < 60)){
-                        break;
+                        if(geral.isDateTimeNotPast(data, hora)){
+                            break;
+                        } else {
+                            std::cout << "Nao e possivel marcar uma consulta em uma data/hora passada!\n";
+                        }
+                    } else {
+                        std::cout << "Digite um horario valido!\n";
                     }
-                    std::cout << "Digite um horario valido!\n";
                 }
 
                 std::string descricao;
@@ -204,17 +209,17 @@ int main(){
                 std::getline(std::cin, resultado);
 
                 std::string data;
-                std::cout << "Qual foi a data do exame?(DD/MM/AAAA)?\n";
-                std::getline(std::cin,data);
-                while (!geral.isValidDateString(data)) {
-                    std::cout << "Data inválida! Use (DD/MM/AAAA).\n";
-                    std::cout << "Digite a data novamente: ";
-                    std::getline(std::cin, data);
-                }
-
                 std::string hora;
                 std::unique_ptr<Time> horas = nullptr;
                 while(true){
+                    std::cout << "Qual foi a data do exame?(DD/MM/AAAA)?\n";
+                    std::getline(std::cin,data);
+                    while (!geral.isValidDateString(data)) {
+                        std::cout << "Data inválida! Use (DD/MM/AAAA).\n";
+                        std::cout << "Digite a data novamente: ";
+                        std::getline(std::cin, data);
+                    }
+
                     while(true){
                         std::cout << "Qual foi o horario do exame? (HH:MM)\n";
                         std::getline(std::cin, hora);
@@ -227,9 +232,14 @@ int main(){
                     }
                     horas = std::make_unique<Time>(hora);
                     if((horas->getHour() >= 0 && horas->getHour() < 24) && (horas->getMinute() >= 0 && horas->getMinute() < 60) && (horas->getSecond() >= 0 && horas->getSecond() < 60)){
-                        break;
+                        if(geral.isDateTimeNotFuture(data, hora)){
+                            break;
+                        } else {
+                            std::cout << "Nao e possivel inserir resultado de exame com data/hora futura!\n";
+                        }
+                    } else {
+                        std::cout << "Digite um horario valido!\n";
                     }
-                    std::cout << "Digite um horario valido!\n";
                 }
 
                 ExamRecord exame(*paciente_real, data, *horas, nome, resultado, lab, doutor);
@@ -249,17 +259,17 @@ int main(){
             // Registrar Glicose
             case 5: {
                 std::string data;
-                std::cout << "Qual a data do teste de glicose?(DD/MM/AAAA)?\n";
-                std::getline(std::cin,data);
-                while (!geral.isValidDateString(data)) {
-                    std::cout << "Data inválida! Use (DD/MM/AAAA).\n";
-                    std::cout << "Digite a data novamente: ";
-                    std::getline(std::cin, data);
-                }
-
                 std::string hora;
                 std::unique_ptr<Time> horas;
                 while(true){
+                    std::cout << "Qual a data do teste de glicose?(DD/MM/AAAA)?\n";
+                    std::getline(std::cin,data);
+                    while (!geral.isValidDateString(data)) {
+                        std::cout << "Data inválida! Use (DD/MM/AAAA).\n";
+                        std::cout << "Digite a data novamente: ";
+                        std::getline(std::cin, data);
+                    }
+
                     while(true){
                         std::cout << "Qual foi o horario do teste de glicose?\n";
                         std::getline(std::cin, hora);
@@ -272,9 +282,14 @@ int main(){
                     }
                     horas = std::make_unique<Time>(hora);
                     if((horas->getHour() >= 0 && horas->getHour() < 24) && (horas->getMinute() >= 0 && horas->getMinute() < 60) && (horas->getSecond() >= 0 && horas->getSecond() < 60)){
-                        break;
+                        if(geral.isDateTimeNotFuture(data, hora)){
+                            break;
+                        } else {
+                            std::cout << "Nao e possivel registrar uma glicose com data/hora futura!\n";
+                        }
+                    } else {
+                        std::cout << "Digite um horario valido!\n";
                     }
-                    std::cout << "Digite um horario valido!\n";
                 }
 
                 int glucoselvl;

@@ -20,6 +20,8 @@ public:
     bool isValidCPF(std::string& cpfStr);
     bool isValidBloodType(const std::string& bloodType);
     bool isValidDateString(const std::string& date);
+    bool isDateTimeNotFuture(const std::string& date, const std::string& time);
+    bool isDateTimeNotPast(const std::string& date, const std::string& time);
 };
 #endif
 
