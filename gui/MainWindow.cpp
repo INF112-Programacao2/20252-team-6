@@ -36,6 +36,8 @@
 #include <QDateTimeAxis>
 #include <QValueAxis>
 #include <QChart>
+#include <algorithm>
+#include <QList>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -266,6 +268,11 @@ void MainWindow::onMarkConsultation()
 
     if (!dbMethods.isValidTimeString(hora.toStdString())) {
         showError("Hora inválida. Use o formato HH:MM ou HH:MM:SS (ex: 14:30).");
+        return;
+    }
+
+    if (!dbMethods.isDateTimeNotPast(data.toStdString(), hora.toStdString())) {
+        showError("Não é possível marcar uma consulta em uma data/hora passada!");
         return;
     }
 
@@ -681,6 +688,11 @@ void MainWindow::onMarkExam()
         return;
     }
 
+    if (!dbMethods.isDateTimeNotFuture(data.toStdString(), hora.toStdString())) {
+        showError("Não é possível inserir resultado de exame com data/hora futura!");
+        return;
+    }
+
     try {
         Time timeObj(hora.toStdString());
 
@@ -882,6 +894,11 @@ void MainWindow::onRegisterGlucose()
 
     if (!dbMethods.isValidTimeString(hora.toStdString())) {
         showError("Hora inválida. Use o formato HH:MM ou HH:MM:SS (ex: 14:30).");
+        return;
+    }
+
+    if (!dbMethods.isDateTimeNotFuture(data.toStdString(), hora.toStdString())) {
+        showError("Não é possível registrar uma glicose com data/hora futura!");
         return;
     }
 
@@ -1089,8 +1106,7 @@ void MainWindow::onViewGlucoseChart()
             "SELECT rg.NivelGlicose, rs.Data, rs.Hora "
             "FROM RegistroGlicose rg "
             "JOIN RegistroSaude rs ON rg.RegistroSaude = rs.Id "
-            "WHERE rs.Paciente = ? "
-            "ORDER BY rs.Data ASC, rs.Hora ASC";
+            "WHERE rs.Paciente = ?";
         
         if (sqlite3_prepare_v2(database, query, -1, &stmt, nullptr) != SQLITE_OK) {
             showError(QString("Erro ao preparar consulta: %1").arg(sqlite3_errmsg(database)));
@@ -1100,14 +1116,11 @@ void MainWindow::onViewGlucoseChart()
 
         sqlite3_bind_int(stmt, 1, m_patientId);
 
-        QLineSeries* series = new QLineSeries();
-        series->setName("Glicose (mg/dL)");
-
-        int count = 0;
-        QDateTime dtMin;
-        QDateTime dtMax;
-        double gMin = 1000;
-        double gMax = 0;
+        struct GlucoseData {
+            QDateTime dateTime;
+            double glicose;
+        };
+        QList<GlucoseData> dataList;
 
         while (sqlite3_step(stmt) == SQLITE_ROW) {
             double glicose = sqlite3_column_double(stmt, 0);
@@ -1121,26 +1134,62 @@ void MainWindow::onViewGlucoseChart()
             }
 
             if (dt.isValid()) {
-                qint64 ts = dt.toMSecsSinceEpoch();
-                series->append(ts, glicose);
-                count++;
-
-                if (count == 1) {
-                    dtMin = dt;
-                    dtMax = dt;
-                } else {
-                    if (dt < dtMin) dtMin = dt;
-                    if (dt > dtMax) dtMax = dt;
-                }
-
-                if (glicose < gMin) gMin = glicose;
-                if (glicose > gMax) gMax = glicose;
+                GlucoseData gd;
+                gd.dateTime = dt;
+                gd.glicose = glicose;
+                dataList.append(gd);
             }
         }
 
         sqlite3_finalize(stmt);
         sqlite3_close(database);
         database = nullptr;
+
+        if (dataList.isEmpty()) {
+            showInfo("Nenhum registro de glicose encontrado.");
+            return;
+        }
+
+        //ordena por data/hora, se igual ordena por glicose
+        std::sort(dataList.begin(), dataList.end(), 
+                 [](const GlucoseData& a, const GlucoseData& b) {
+                     if (a.dateTime == b.dateTime) {
+                         return a.glicose < b.glicose;
+                     }
+                     return a.dateTime < b.dateTime;
+                 });
+
+        QLineSeries* series = new QLineSeries();
+        series->setName("Glicose (mg/dL)");
+
+        int count = dataList.size();
+        if (count == 0) {
+            showInfo("Nenhum registro de glicose encontrado.");
+            return;
+        }
+
+        QDateTime dtMin = dataList.first().dateTime;
+        QDateTime dtMax = dataList.last().dateTime;
+        double gMin = 1000;
+        double gMax = 0;
+
+        qint64 lastTimestamp = 0;
+        bool firstPoint = true;
+        for (const auto& gd : dataList) {
+            qint64 ts = gd.dateTime.toMSecsSinceEpoch();
+            
+            //evita timestamps duplicados no grafico
+            if (!firstPoint && ts <= lastTimestamp) {
+                ts = lastTimestamp + 1;
+            }
+            
+            series->append(ts, gd.glicose);
+            lastTimestamp = ts;
+            firstPoint = false;
+
+            if (gd.glicose < gMin) gMin = gd.glicose;
+            if (gd.glicose > gMax) gMax = gd.glicose;
+        }
 
         if (count == 0) {
             showInfo("Nenhum registro de glicose encontrado.");
