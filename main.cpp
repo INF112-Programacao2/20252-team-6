@@ -258,6 +258,7 @@ int main(){
 
             // Registrar Glicose
             case 5: {
+                std::cin.ignore(); 
                 std::string data;
                 std::string hora;
                 std::unique_ptr<Time> horas;
@@ -323,6 +324,8 @@ int main(){
 
                     } else {
                         std::cout << "Digite um caractere valido!\n";
+                        std::cin.clear();
+                        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
                     }
                 }
 
